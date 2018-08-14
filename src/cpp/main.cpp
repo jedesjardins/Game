@@ -3,6 +3,7 @@
 
 #include "sol.hpp"
 
+#include <unordered_map>
 
 int main()
 {
@@ -19,5 +20,7 @@ int main()
 	lua.script("print('Test')");
 
 	sf::RenderWindow window(sf::VideoMode(1200, 900), "Game", sf::Style::Titlebar | sf::Style::Close);
+
+	std::unordered_map<sf::Keyboard::Key, int> keystates;
 
 }
