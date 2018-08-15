@@ -1,5 +1,6 @@
 
 #include <unordered_map>
+#include <cstdio>
 
 #include <SFML/Graphics.hpp>
 #include "imgui.h"
@@ -12,6 +13,8 @@
 #include "registry.hpp"
 #include "imgui_demo.cpp"
 
+#define stringize(x) #x
+
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(1200, 900), "EverDeeper", sf::Style::Titlebar | sf::Style::Close);
@@ -20,20 +23,16 @@ int main()
 	std::unordered_map<std::string, sf::Texture*> resources;
 	sf::Font font;
 
-	/*
-	if(!font.loadFromFile("resources/basis33.ttf"))
-		std::cout << "Couldn't load script" << std::endl;
-	*/
+	if(!font.loadFromFile(std::string(BASE_DIR)+"/resources/basis33.ttf"))
+		printf("Couldn't load script");
 
 	ImGui::SFML::Init(window);
 
 	sol::state lua;
 
-	/*
 	register_functions(lua, window, resources, font);
 	lua.script("require('src.lua.main')");
 	sol::function update = lua["update"];
-	*/
 
 	bool running = true;
 	sf::Clock clock;
@@ -47,7 +46,7 @@ int main()
 		running &= input.update(window);
 
 		window.clear({0, 0, 0, 255});
-		//running &= (bool)update(dt.asSeconds(), input);
+		running &= (bool)update(dt.asSeconds(), input);
 		ImGui::SFML::Render(window);
 		window.display();
 

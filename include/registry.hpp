@@ -254,30 +254,122 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 
 		});
 
-	lua.set_function("draw_text", [&font, &window](const std::string &str, float x, float y, float w, float h)
+	lua.set_function("draw_text", [&font, &window](const std::string &str, float x, float y, float h)
 		{
 			auto view = window.getView();
-
 			auto newview = window.getDefaultView();
-
-			auto center = newview.getCenter();
-			auto size = newview.getSize();
-
 			window.setView(newview);
 
-			sf::Text text{str, font};
-			text.setCharacterSize(size.y*h);
-			text.setFillColor({255, 255, 255, 255});
+			auto size = newview.getSize();
+			int location = size.x*x;
 
-			text.setPosition(0, 0);
-			//text.setScale(1, 2);
+			int totalAdvance = 0;
+			int totalWidth = 0;
+			int maxHeight = 0;
 
+			//std::cout << str << std::endl;
 
-			//draw
+			for(char c : str)
+			{
+				auto glyph = font.getGlyph(c, 100, false);
+
+				totalAdvance += glyph.advance;
+
+				//std::cout << " " << glyph.bounds.width;
+				totalWidth += glyph.bounds.width;
+				maxHeight = maxHeight < glyph.bounds.height ? glyph.bounds.height : maxHeight;
+			}
+
+			//std::cout << "\n";
+
+			for(char c : str)
+			{
+				auto glyph = font.getGlyph(c, 100, false);
+
+				totalAdvance += glyph.advance;
+
+				//std::cout << " " << glyph.advance;
+				totalWidth += glyph.bounds.width;
+				maxHeight = maxHeight < glyph.bounds.height ? glyph.bounds.height : maxHeight;
+			}
+
+			//std::cout << "\n" << totalAdvance << " " << totalWidth << " " << maxHeight << std::endl;
+
+			for(char c : str)
+			{
+				auto glyph = font.getGlyph(c, 100, false);
+
+				auto advance = glyph.advance;
+				auto bounds = glyph.bounds;
+				auto rect = glyph.textureRect;
+
+				sf::Sprite sprite;
+				sprite.setTexture(font.getTexture(100));
+				sprite.setTextureRect(rect);
+				sprite.setOrigin(-bounds.left, -bounds.top);
+				sprite.setPosition(location, size.y*(1-y));//size.y*(1-h));//(size.y*h)/lb.height);
+
+				window.draw(sprite);
+				location += advance;
+			}
+
+			/*
+			auto location = 0;
+			for(int i = 0; i < 26; ++i)
+			{
+				auto glyph = font.getGlyph(i + 65, 50, false);
+				auto advance = glyph.advance;
+				auto bounds = glyph.bounds;
+				auto rect = glyph.textureRect;
+				std::cout << char(i + 65) << "\n";
+				std::cout << advance << "\n";
+				std::cout << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << "\n";
+				std::cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << "\n" << std::endl;
+				sf::Sprite sprite;
+				sprite.setTexture(font.getTexture(50));
+				sprite.setTextureRect(rect);
+				sprite.setOrigin(-bounds.left, -bounds.top);
+				sprite.setPosition(location, 100); //bounds.height+bounds.top);
+				window.draw(sprite);
+				location += advance;
+				glyph = font.getGlyph(i + 97, 50, false);
+				advance = glyph.advance;
+				bounds = glyph.bounds;
+				rect = glyph.textureRect;
+				std::cout << char(i + 97) << "\n";
+				std::cout << advance << "\n";
+				std::cout << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << "\n";
+				std::cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << "\n" << std::endl;
+				sprite.setTexture(font.getTexture(50));
+				sprite.setTextureRect(rect);
+				sprite.setOrigin(-bounds.left, -bounds.top);
+				sprite.setPosition(location, 100); //bounds.height+bounds.top);
+				window.draw(sprite);
+				location += advance;
+			}
+			*/
+			/*
+			// save old view
+			auto view = window.getView();
+			// set view to screen size
+			auto newview = window.getDefaultView();
+			window.setView(newview);
+			// set size of the font
+			auto size = newview.getSize();
+			sf::Text text{str, font, (unsigned int)(size.y*h)};
+			// fix the weird starting offset
+			auto lb = text.getLocalBounds();
+			auto gb = text.getLocalBounds();
+			std::cout << gb.left << " " << gb.top << " " << gb.width << " " << gb.height << std::endl;
+			std::cout << lb.left << " " << lb.top << " " << lb.width << " " << lb.height << std::endl;
+			std::cout << size.y << " " << size.y*h << " " << lb.height << "\n" << std::endl;
+			text.setOrigin(lb.left, lb.top+lb.height);
+			text.setScale((size.y*h)/lb.height, (size.y*h)/lb.height);
+			text.setPosition(size.x*x, size.y*(1-y));
 			window.draw(text);
-
+			// return view to normal
 			window.setView(view);
-
+			*/
 		});
 
 	lua["collision_check"] = &collide;

@@ -1,5 +1,4 @@
 LUA_FOLDER = (...):match("(.-)[^%.]+$")
-RESOURCE_FOLDER = "resources.data."
 
 print(LUA_FOLDER)
 
