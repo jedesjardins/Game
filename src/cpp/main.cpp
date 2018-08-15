@@ -1,26 +1,66 @@
 
-#include <SFML/Graphics.hpp>
+#include <unordered_map>
 
+#include <SFML/Graphics.hpp>
+#include "imgui.h"
+#include "imgui-SFML.h"
 #include "sol.hpp"
 
-#include <unordered_map>
+#include "input.hpp"
+
+#include "collision.hpp"
+#include "registry.hpp"
+#include "imgui_demo.cpp"
 
 int main()
 {
+	sf::RenderWindow window(sf::VideoMode(1200, 900), "EverDeeper", sf::Style::Titlebar | sf::Style::Close);
+	window.setVerticalSyncEnabled(true);
+
+	std::unordered_map<std::string, sf::Texture*> resources;
+	sf::Font font;
+
+	/*
+	if(!font.loadFromFile("resources/basis33.ttf"))
+		std::cout << "Couldn't load script" << std::endl;
+	*/
+
+	ImGui::SFML::Init(window);
+
 	sol::state lua;
-	lua.open_libraries(
-			sol::lib::base,
-			sol::lib::package,
-			sol::lib::string,
-			sol::lib::table,
-			sol::lib::math,
-			sol::lib::os,
-			sol::lib::io
-		);
-	lua.script("print('Test')");
 
-	sf::RenderWindow window(sf::VideoMode(1200, 900), "Game", sf::Style::Titlebar | sf::Style::Close);
+	/*
+	register_functions(lua, window, resources, font);
+	lua.script("require('src.lua.main')");
+	sol::function update = lua["update"];
+	*/
 
-	std::unordered_map<int, int> keystates;
+	bool running = true;
+	sf::Clock clock;
+	sf::Time dt;
+
+	Input input;
+
+	while (running)
+	{
+		ImGui::SFML::Update(window, dt);
+		running &= input.update(window);
+
+		window.clear({0, 0, 0, 255});
+		//running &= (bool)update(dt.asSeconds(), input);
+		ImGui::SFML::Render(window);
+		window.display();
+
+		dt = clock.restart();
+	}
+
+	for(auto it: resources)
+	{
+		delete it.second;
+	}
+
+	ImGui::SFML::Shutdown();
+
+	return 0;
 
 }
