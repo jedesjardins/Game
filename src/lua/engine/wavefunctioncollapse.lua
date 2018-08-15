@@ -1,0 +1,3 @@
+local Wave = {}
+
+return Wave
