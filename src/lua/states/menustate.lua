@@ -20,8 +20,6 @@ function State:update(dt, input)
 
 	if input:state(KEYS["Return"]) == KEYSTATE.PRESSED then
 		if self.curr_item == 1 then
-			os.execute("mkdir World")
-			os.execute("touch World/yii.lua")
 			return {{"switch", "playstate"}}
 		else if self.curr_item == 3 then
 			return {{"pop", 1}}

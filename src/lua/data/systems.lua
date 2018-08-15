@@ -112,10 +112,10 @@ systems.controlCamera = {
 				end
 			end)
 			
-			local start = view:getCenter({}) 
+			local start = view:getCenter() 
 			view:setCenter(
-					math.lerp(start[1], view_pos.x*TILESIZE/count),
-					math.lerp(start[2], -view_pos.y*TILESIZE/count)
+					math.lerp(start.x, view_pos.x*TILESIZE/count),
+					math.lerp(start.y, -view_pos.y*TILESIZE/count)
 				)
 		end)
 	end
@@ -717,18 +717,27 @@ systems.basicDraw = {
 			local sprite = components.sprite
 
 			if not sprite.sprite then
+				--[[
 				sprite.sprite = Sprite.new()
 				sprite.sprite:init(sprite.img..".png", sprite.framesx, sprite.framesy, true)
+				]]
+				sprite.sprite = Anim_Sprite.new()
+				sprite.sprite:setTexture(sprite.img..".png")
+				sprite.sprite:setFrames(Vec2u.new(sprite.framesx, sprite.framesy))
 			end
-
+			--[[
 			sprite.sprite:setFrame(sprite.framex-1, sprite.framey-1)
+			sprite.sprite:setPosition(position.x*TILESIZE, -position.y*TILESIZE)
+			sprite.sprite:setRotation(-(position.r or 0))
+			]]
+			sprite.sprite:setFrame(Vec2u.new(sprite.framex-1, sprite.framey-1))
 			sprite.sprite:setPosition(position.x*TILESIZE, -position.y*TILESIZE)
 			sprite.sprite:setRotation(-(position.r or 0))
 
 			if em:get(id, "highlight") then
-				sprite.sprite:setColor(100, 255, 100, 255)
+				--sprite.sprite:setColor(100, 255, 100, 255)
 			else
-				sprite.sprite:setColor(255, 255, 255, 255)
+				--sprite.sprite:setColor(255, 255, 255, 255)
 			end
 
 			z = position.z or position.y-position.h/2
@@ -741,7 +750,7 @@ systems.basicDraw = {
 		table.sort(drawItems, sortfunc)
 
 		for _, sprite in ipairs(drawItems) do
-			draw(sprite[2])
+			sprite[2]:draw()
 		end
 	end
 }

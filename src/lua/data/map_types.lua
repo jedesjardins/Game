@@ -431,7 +431,7 @@ function MultiLevelDungeon.new(rect, options)
 	self.random:seed(self.seed)
 
 
-	for i = 1, self.random:random(1, 5) do
+	for i = 1, self.random:random(1, 1) do
 		floors[i] = Floor.new(rect,
 			{
 				seed = (options.seed or 0) + i,

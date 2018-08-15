@@ -10,14 +10,14 @@ function state:enter(blackboard)
 
 	local view = self.ecs.em:getComponent(self.ecs.em.camera_id, "camera").view
 
-	local vx, vy = table.unpack(view:getSize({}))
+	local vx, vy = view:getSize().x, view:getSize().y
 	self.fade_tex = RenderTexture.new(math.floor(vx), math.floor(vy))
 	self.fade_tex:init(0)
 
 	self.fade_sprite = Sprite.new()
 	self.fade_sprite:initFromTarget(self.fade_tex)
 	self.fade_sprite:setOrigin(math.floor(vx/2), math.floor(vy/2))
-	self.fade_sprite:setPosition(table.unpack(view:getCenter({})))
+	self.fade_sprite:setPosition(view:getCenter().x, view:getCenter().y)
 end
 
 function state:update(dt, input)

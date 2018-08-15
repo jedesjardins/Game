@@ -18,21 +18,6 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 
 	lua["TILESIZE"] = 16;
 
-	lua["run"] = [&lua](std::string command) -> int
-		{
-			auto pfr = lua.script(command, [](lua_State*, sol::protected_function_result pfr) {
-					// pfr will contain things that went wrong, for either loading or executing the script
-					// Can throw your own custom error
-					// You can also just return it, and let the call-site handle the error if necessary.
-					return pfr;
-				});
-
-			if(!pfr.valid())
-				return 1;
-			else
-				return 0;
-		};
-
 	lua.new_usertype<Input>("Input",
 			"state", &Input::getKeyState,
 			"mousePos", &Input::getMousePosition,
@@ -75,6 +60,58 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 		"new", sol::constructors<sf::Vector2i(), sf::Vector2f(int, int)>(),
 		"x", &sf::Vector2i::x,
 		"y", &sf::Vector2i::y
+	);
+
+	lua.new_usertype<sf::Vector2u>("Vec2u",
+		"new", sol::constructors<sf::Vector2u(), sf::Vector2u(unsigned int, unsigned int)>(),
+		"x", &sf::Vector2u::x,
+		"y", &sf::Vector2u::y
+	);
+
+	lua.new_usertype<sf::Anim_Sprite>("Anim_Sprite",
+		"setPosition", sol::overload(
+				static_cast<void (sf::Anim_Sprite::*)(float, float)>(&sf::Anim_Sprite::setPosition),
+				static_cast<void (sf::Anim_Sprite::*)(const sf::Vector2f&)>(&sf::Anim_Sprite::setPosition)
+			),
+		"setRotation", &sf::Anim_Sprite::setRotation,
+		"setTexture", [&resources](sf::Anim_Sprite &sprite, std::string id)
+			{
+				sf::Texture *texture;
+				if(!resources[id])
+				{
+					texture = new sf::Texture();
+					texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
+
+					resources[id] = texture;
+				}
+				else
+					texture = resources[id];
+
+				sprite.setTexture(*texture);
+			},
+		"setFrames", &sf::Anim_Sprite::setFrames,
+		"setFrame", &sf::Anim_Sprite::setFrame,
+		"draw", [&window](sf::Anim_Sprite &sprite)
+			{
+				window.draw(sprite);
+			}
+	);
+
+	lua.new_usertype<sf::View>("View",
+		"setCenter", sol::overload(
+				static_cast<void (sf::View::*)(float, float)>(&sf::View::setCenter),
+				static_cast<void (sf::View::*)(const sf::Vector2f&)>(&sf::View::setCenter)
+			),
+		"getCenter", &sf::View::getCenter,
+		"setSize", sol::overload(
+				static_cast<void (sf::View::*)(float, float)>(&sf::View::setSize),
+				static_cast<void (sf::View::*)(const sf::Vector2f&)>(&sf::View::setSize)
+			),
+		"getSize", &sf::View::getSize,
+		"makeTarget", [&window](sf::View &view)
+			{
+				window.setView(view);
+			}
 	);
 
 	lua.new_usertype<sf::RenderTexture>("RenderTexture",
@@ -127,7 +164,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 				if(!resources[id])
 				{
 					texture = new sf::Texture();
-					texture->loadFromFile(("resources/sprites/"+id).c_str());
+					texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
 
 					resources[id] = texture;
 				}
@@ -169,32 +206,12 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			}
 	);
 
-	lua.new_usertype<sf::View>("View",
-		"setCenter", static_cast<void (sf::View::*)(float, float)>(&sf::View::setCenter),
-		"getCenter", [](sf::View &view, sol::table output) -> sol::table
-			{
-				auto center = view.getCenter();
-				output[1] = center.x;
-				output[2] = center.y;
-				return output;
-			},
-		"setSize", static_cast<void (sf::View::*)(float, float)>(&sf::View::setSize),
-		"getSize", [](const sf::View &view, sol::table output) -> sol::table
-			{
-				const sf::Vector2f &size = view.getSize();
-
-				output[1] = size.x;
-				output[2] = size.y;
-
-				return output;
-			},
-		"makeTarget", [&window](sf::View &view)
-			{
-				window.setView(view);
-			}
-	);
-
 	lua.set_function("draw", [&window](sf::Sprite &sprite)
+		{
+			window.draw(sprite);
+		});
+
+	lua.set_function("draw_a", [&window](sf::Drawable &sprite)
 		{
 			window.draw(sprite);
 		});
@@ -207,7 +224,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			if(!resources[texture_name])
 			{
 				texture = new sf::Texture();
-				texture->loadFromFile(("resources/sprites/"+texture_name).c_str());
+				texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+texture_name).c_str());
 
 				resources[texture_name] = texture;
 			}
