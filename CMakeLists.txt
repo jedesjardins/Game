@@ -14,12 +14,12 @@ find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 find_package(OpenGL REQUIRED)
 
 # source files
-#file(GLOB SOURCES "src/cpp/*.cpp")
+file(GLOB SOURCES "src/cpp/*.cpp")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(game src/cpp/main.cpp src/cpp/imgui.cpp src/cpp/imgui_draw.cpp src/cpp/imgui-SFML.cpp)#${SOURCES})
+add_executable(game ${SOURCES})
 
 TARGET_LINK_LIBRARIES(game LUALIB sfml-graphics sfml-audio ${OPENGL_LIBRARIES})

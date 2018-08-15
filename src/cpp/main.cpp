@@ -21,6 +21,6 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(1200, 900), "Game", sf::Style::Titlebar | sf::Style::Close);
 
-	std::unordered_map<sf::Keyboard::Key, int> keystates;
+	std::unordered_map<int, int> keystates;
 
 }
