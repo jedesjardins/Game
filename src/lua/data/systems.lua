@@ -114,8 +114,8 @@ systems.controlCamera = {
 			
 			local start = view:getCenter() 
 			view:setCenter(
-					math.lerp(start.x, view_pos.x*TILESIZE/count),
-					math.lerp(start.y, -view_pos.y*TILESIZE/count)
+					math.lerp(start.x, math.round(view_pos.x*TILESIZE/count)),
+					math.lerp(start.y, math.round(-view_pos.y*TILESIZE/count))
 				)
 		end)
 	end

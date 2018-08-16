@@ -2,6 +2,7 @@
 #define UI_TEXT
 
 #include <SFML/Graphics.hpp>
+#include <cmath>
 
 namespace sf
 {
@@ -29,6 +30,10 @@ public:
 	void setColor(const Color& color);
 	const Color& getColor();
 
+	FloatRect getGlobalBounds() const;
+	FloatRect getLocalBounds() const;
+
+	mutable float _baseLineOffset = 10;
 
 private:
 	virtual void draw(RenderTarget& target, RenderStates states) const;
@@ -42,9 +47,16 @@ private:
 	float _lineSpacingFactor;
 	Color _fillColor;
 
-	bool _geometryNeedUpdate;
-	mutable VertexArray _vertices;
 
+	
+	mutable VertexArray _vertices;
+	mutable FloatRect _bounds;
+	mutable bool _geometryNeedUpdate;
+
+	//unused
+	mutable VertexArray _outlineVertices;
+	float _outlineThickness = 0.f;
+	Color _outlineColor;
 
 };
 

@@ -1,0 +1,6 @@
+CONFIG = {
+	FULLSCREEN = false,
+	BORDERLESS = false,
+	WINDOW_X = 1280,
+	WINDOW_Y = 960,
+}

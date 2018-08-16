@@ -11,14 +11,31 @@
 #include "config.h"
 #include "input.hpp"
 #include "anim_sprite.hpp"
+#include "ui_text.hpp"
 
 #include "collision.hpp"
 #include "registry.hpp"
 #include "imgui_demo.cpp"
 
+void read_config(sol::state &lua)
+{
+	lua.script_file(std::string(SOURCE_DIR)+"config.lua");
+
+	
+}
+
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(1200, 900), "EverDeeper", sf::Style::Titlebar | sf::Style::Close);
+	sol::state lua;
+
+	lua.script_file("");
+
+	for(auto mode: sf::VideoMode::getFullscreenModes())
+	{
+		std::cout << mode.width << " " << mode.height << std::endl;
+	}
+
+	sf::RenderWindow window(sf::VideoMode(320, 240), "EverDeeper", sf::Style::Default);
 	window.setVerticalSyncEnabled(true);
 
 	std::unordered_map<std::string, sf::Texture*> resources;
@@ -28,8 +45,6 @@ int main()
 		std::cout << "Couldn't load script" << std::endl;
 
 	ImGui::SFML::Init(window);
-
-	sol::state lua;
 
 	register_functions(lua, window, resources, font);
 	lua["ROOT_DIR"] = SOURCE_DIR;

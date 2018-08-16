@@ -114,6 +114,27 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			}
 	);
 
+	lua.new_usertype<sf::UI_Text>("UI_Text",
+		"", sol::no_constructor,
+		"new", [&font](const std::string &str, unsigned int characterSize) -> sf::UI_Text*
+			{
+				sf::UI_Text *text = new sf::UI_Text(str, font, characterSize);
+				return text;
+			},
+		"setPosition", [](sf::UI_Text *text, float x, float y)
+			{
+				text->setPosition(x, y);
+			},
+		"setScale", [](sf::UI_Text *text, float x, float y)
+			{
+				text->setScale(x, y);
+			},
+		"draw", [&window](sf::UI_Text *text)
+			{
+				window.draw(*text);
+			}
+	);
+
 	lua.new_usertype<sf::RenderTexture>("RenderTexture",
 		"", sol::no_constructor,
 		"new", [](unsigned int w, unsigned int h) -> sf::RenderTexture*
@@ -269,6 +290,30 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 
 			window.setView(old_view);
 
+		});
+
+	lua.set_function("draw_Mytext", [&font, &window](const std::string &str, float x, float y, float h)
+		{
+			// save old view
+			auto view = window.getView();
+			// set view to screen size
+			auto newview = window.getDefaultView();
+			window.setView(newview);
+			// set size of the font
+			auto size = newview.getSize();
+			sf::UI_Text text{str, font, (unsigned int)(size.y*h)};
+			// fix the weird starting offset
+			auto lb = text.getLocalBounds();
+			auto gb = text.getLocalBounds();
+
+			std::cout << text._baseLineOffset << std::endl;
+			//text.setOrigin(lb.left, text._baseLineOffset);
+			//text.setScale((size.y*h)/lb.height, (size.y*h)/lb.height);
+			text.setPosition(size.x*x, size.y*(1-y));
+			
+			window.draw(text);
+			// return view to normal
+			window.setView(view);
 		});
 
 	lua.set_function("draw_text", [&font, &window](const std::string &str, float x, float y, float h)

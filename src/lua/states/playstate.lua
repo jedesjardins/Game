@@ -40,7 +40,7 @@ function state:enter()
 
 	local view = View.new()
 	view:setCenter(map.startpoint.x*TILESIZE, -map.startpoint.y*TILESIZE);
-	view:setSize(TILESIZE*32,TILESIZE*24)
+	view:setSize(TILESIZE*20,TILESIZE*15)
 
 	ecs.em.camera_id = ecs.em:createEntity("camera", {view, "follow"})
 
@@ -60,6 +60,10 @@ function state:enter()
 	self.toggle_demo = false
 	self.env = createSafeEnvironment()
 	self:registerConsoleFunctions()
+
+	self.text = UI_Text.new("Hello", 100)
+	self.text:setPosition(0, 0)
+	self.text:setScale(0.25, 0.25)
 end
 
 function state:registerSystems(ecs)
@@ -202,6 +206,7 @@ function state:update(dt, input)
 	if ret then
 		return ret
 	end
+	local pos = self.ecs.em:get(self.ecs.em.player_id, "position")
 
 	self.map:update()
 end
@@ -212,6 +217,8 @@ function state:draw()
 	--self.map.view:makeTarget()
 	draw(self.map.floor.sprite)
 	self.ecs:draw()
+
+	self.text:draw()
 end
 
 function state:exit()
