@@ -1,6 +1,5 @@
-CONFIG = {
-	FULLSCREEN = false,
-	BORDERLESS = false,
-	WINDOW_X = 1280,
-	WINDOW_Y = 960,
-}
+
+FULLSCREEN = true
+BORDERLESS = false
+WINDOW_X = 640
+WINDOW_Y = 480

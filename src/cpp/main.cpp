@@ -13,30 +13,95 @@
 #include "anim_sprite.hpp"
 #include "ui_text.hpp"
 
+struct Window_State
+{
+	bool fullscreen;
+	bool borderless;
+	sf::Vector2u screen_dimensions;
+	sf::Vector2u max_screen_dimensions;
+};
+
+Window_State WINDOW_STATE;
+
+// These files are dropped in as source, no accompanying cpp files
 #include "collision.hpp"
 #include "registry.hpp"
 #include "imgui_demo.cpp"
 
-void read_config(sol::state &lua)
+void read_config(sol::state &lua, sf::RenderWindow &window)
 {
-	lua.script_file(std::string(SOURCE_DIR)+"config.lua");
+	sol::environment empty_env(lua, sol::create);
 
-	
+	lua.script_file(std::string(SOURCE_DIR)+"/config.lua", empty_env);
+
+	WINDOW_STATE.screen_dimensions.x = (unsigned int)empty_env["WINDOW_X"] > 640 ? empty_env["WINDOW_X"] : 640;
+	WINDOW_STATE.screen_dimensions.y = (unsigned int)empty_env["WINDOW_Y"] > 480 ? empty_env["WINDOW_Y"] : 480;
+	WINDOW_STATE.fullscreen = empty_env["FULLSCREEN"];
+	WINDOW_STATE.borderless = empty_env["BORDERLESS"];
+
+	if(WINDOW_STATE.fullscreen)
+	{
+		sf::VideoMode best_mode{0, 0};
+		for(auto mode: sf::VideoMode::getFullscreenModes())
+			if((mode.width > best_mode.width && mode.height > best_mode.height) || 
+				(mode.width == WINDOW_STATE.screen_dimensions.x && mode.height == WINDOW_STATE.screen_dimensions.y))
+				best_mode = mode;
+
+		WINDOW_STATE.screen_dimensions = {best_mode.width, best_mode.height};
+
+		window.create(
+			best_mode,
+			"Game",
+			sf::Style::Fullscreen
+			);
+
+	}
+	else
+		if(WINDOW_STATE.borderless)
+			window.create(
+				sf::VideoMode(WINDOW_STATE.screen_dimensions.x, WINDOW_STATE.screen_dimensions.y),
+				"Game",
+				sf::Style::None
+				);
+		else
+			window.create(
+				sf::VideoMode(WINDOW_STATE.screen_dimensions.x, WINDOW_STATE.screen_dimensions.y),
+				"Game",
+				sf::Style::Titlebar | sf::Style::Close
+				);
+
+
+	WINDOW_STATE.max_screen_dimensions = {
+		sf::VideoMode::getDesktopMode().width,
+		sf::VideoMode::getDesktopMode().height
+	};
+
+	window.setVerticalSyncEnabled(true);
 }
 
 int main()
 {
 	sol::state lua;
+	lua.open_libraries(
+			sol::lib::base,
+			sol::lib::package,
+			sol::lib::string,
+			sol::lib::table,
+			sol::lib::math,
+			sol::lib::os,
+			sol::lib::io
+		);
+	std::string path = lua["package"]["path"];
+	std::string new_path;
+	new_path.append(SOURCE_DIR).append("/?.lua;").append(SOURCE_DIR).append("/?/init.lua;").append(path);
+	lua["package"]["path"] = new_path;
+	//lua["package"]["path"] = std::string(SOURCE_DIR)+"/?.lua;"+std::string(SOURCE_DIR)+"/?/init.lua;"+lua["package"]["path"];
+	//lua["ROOT_DIR"] = SOURCE_DIR;
+	//lua.script("package.path = ROOT_DIR..'/?.lua;'..ROOT_DIR..'/?/init.lua;'..package.path");
 
-	lua.script_file("");
+	sf::RenderWindow window;
 
-	for(auto mode: sf::VideoMode::getFullscreenModes())
-	{
-		std::cout << mode.width << " " << mode.height << std::endl;
-	}
-
-	sf::RenderWindow window(sf::VideoMode(320, 240), "EverDeeper", sf::Style::Default);
-	window.setVerticalSyncEnabled(true);
+	read_config(lua, window);
 
 	std::unordered_map<std::string, sf::Texture*> resources;
 	sf::Font font;
@@ -47,8 +112,6 @@ int main()
 	ImGui::SFML::Init(window);
 
 	register_functions(lua, window, resources, font);
-	lua["ROOT_DIR"] = SOURCE_DIR;
-	lua.script("package.path = ROOT_DIR..'/?.lua;'..ROOT_DIR..'/?/init.lua;'..package.path");
 	lua.script("require('src.lua.main')");
 	sol::function update = lua["update"];
 

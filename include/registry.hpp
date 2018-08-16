@@ -6,49 +6,47 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 						std::unordered_map<std::string, sf::Texture *> &resources,
 						sf::Font &font)
 {
-	lua.open_libraries(
-			sol::lib::base,
-			sol::lib::package,
-			sol::lib::string,
-			sol::lib::table,
-			sol::lib::math,
-			sol::lib::os,
-			sol::lib::io
-		);
-
 	lua["TILESIZE"] = 16;
 
+	lua.new_usertype<Window_State>("Window_State",
+		"", sol::no_constructor,
+		"fullscreen", &Window_State::fullscreen,
+		"borderless", &Window_State::borderless,
+		"screen_dimensions", &Window_State::screen_dimensions,
+		"max_screen_dimensions", &Window_State::max_screen_dimensions
+	);
+
 	lua.new_usertype<Input>("Input",
-			"state", &Input::getKeyState,
-			"mousePos", &Input::getMousePosition,
-			"mouseRight", &Input::getMouseRight,
-			"mouseLeft", &Input::getMouseLeft,
-			"mousePosition", &Input::getMousePosition,
-			"mouseViewPosition", [&window](Input &input, sf::View &view) -> sf::Vector2f
-			{
-				return input.getMouseViewPosition(window, view);
-			}
-		);
+		"state", &Input::getKeyState,
+		"mousePos", &Input::getMousePosition,
+		"mouseRight", &Input::getMouseRight,
+		"mouseLeft", &Input::getMouseLeft,
+		"mousePosition", &Input::getMousePosition,
+		"mouseViewPosition", [&window](Input &input, sf::View &view) -> sf::Vector2f
+		{
+			return input.getMouseViewPosition(window, view);
+		}
+	);
 
 	lua.new_usertype<RandomGenerator>("Random",
-			"seed", &RandomGenerator::seed,
-			"random", sol::overload(
-					[](RandomGenerator &engine, int min, int max) -> int
-					{
-						++max;
-						return static_cast<int>(engine.random()*(max-min) + min);
-					},
-					[](RandomGenerator &engine, int max) -> int
-					{
-						++max;
-						return static_cast<int>(engine.random()*max);
-					},
-					[](RandomGenerator &engine) -> double
-					{
-						return engine.random();
-					}
-				)
-		);
+		"seed", &RandomGenerator::seed,
+		"random", sol::overload(
+				[](RandomGenerator &engine, int min, int max) -> int
+				{
+					++max;
+					return static_cast<int>(engine.random()*(max-min) + min);
+				},
+				[](RandomGenerator &engine, int max) -> int
+				{
+					++max;
+					return static_cast<int>(engine.random()*max);
+				},
+				[](RandomGenerator &engine) -> double
+				{
+					return engine.random();
+				}
+			)
+	);
 
 	lua.new_usertype<sf::Vector2f>("Vec2f",
 		"new", sol::constructors<sf::Vector2f(), sf::Vector2f(double, double)>(),
