@@ -16,6 +16,24 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 		"max_screen_dimensions", &Window_State::max_screen_dimensions
 	);
 
+	lua.new_usertype<Resource_Map>("Resource_Map",
+		"getTexture", [](Resource_Map &resources, std::string id) -> sf::Texture const&
+		{
+			sf::Texture *texture{nullptr};
+			if(!resources[id])
+			{
+				texture = new sf::Texture();
+				texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
+
+				resources[id] = texture;
+			}
+			else
+				texture = resources[id];
+
+			return *texture;
+		}
+	);
+
 	lua.new_usertype<Input>("Input",
 		"state", &Input::getKeyState,
 		"mousePos", &Input::getMousePosition,
@@ -72,21 +90,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 				static_cast<void (sf::Anim_Sprite::*)(const sf::Vector2f&)>(&sf::Anim_Sprite::setPosition)
 			),
 		"setRotation", &sf::Anim_Sprite::setRotation,
-		"setTexture", [&resources](sf::Anim_Sprite &sprite, std::string id)
-			{
-				sf::Texture *texture;
-				if(!resources[id])
-				{
-					texture = new sf::Texture();
-					texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
-
-					resources[id] = texture;
-				}
-				else
-					texture = resources[id];
-
-				sprite.setTexture(*texture);
-			},
+		"setTexture", &sf::Anim_Sprite::setTexture,
 		"setFrames", &sf::Anim_Sprite::setFrames,
 		"setFrame", &sf::Anim_Sprite::setFrame,
 		"draw", [&window](sf::Anim_Sprite &sprite)
@@ -113,20 +117,18 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 	);
 
 	lua.new_usertype<sf::UI_Text>("UI_Text",
-		"", sol::no_constructor,
-		"new", [&font](const std::string &str, unsigned int characterSize) -> sf::UI_Text*
-			{
-				sf::UI_Text *text = new sf::UI_Text(str, font, characterSize);
-				return text;
-			},
-		"setPosition", [](sf::UI_Text *text, float x, float y)
-			{
-				text->setPosition(x, y);
-			},
-		"setScale", [](sf::UI_Text *text, float x, float y)
-			{
-				text->setScale(x, y);
-			},
+		"new", sol::constructors<
+				sf::UI_Text(),
+				sf::UI_Text(const std::string &, const sf::Font &, unsigned int)
+			>(),
+		"setPosition", sol::overload(
+				static_cast<void (sf::UI_Text::*)(float, float)>(&sf::UI_Text::setPosition),
+				static_cast<void (sf::UI_Text::*)(const sf::Vector2f&)>(&sf::UI_Text::setPosition)
+			),
+		"setScale", sol::overload(
+				static_cast<void (sf::UI_Text::*)(float, float)>(&sf::UI_Text::setScale),
+				static_cast<void (sf::UI_Text::*)(const sf::Vector2f&)>(&sf::UI_Text::scale)
+			),
 		"draw", [&window](sf::UI_Text *text)
 			{
 				window.draw(*text);

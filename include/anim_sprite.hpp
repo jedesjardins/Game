@@ -14,7 +14,7 @@ public:
 	Anim_Sprite(const Texture &texture, const Vector2u &frames = {1, 1}, const Vector2u &frame = {0, 0});
 	~Anim_Sprite();
 
-	void setTexture(const Texture &texture, bool resetRect=true);
+	void setTexture(const Texture &texture);
 	const Texture* getTexture() const;
 
 	const IntRect& getTextureRect() const;

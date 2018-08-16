@@ -19,13 +19,13 @@ Anim_Sprite::~Anim_Sprite()
 {
 }
 
-void Anim_Sprite::setTexture(const Texture &texture, bool resetRect)
+void Anim_Sprite::setTexture(const Texture &texture)
 {
-	bool reset = (resetRect || (!_texture && (_rect == IntRect()))) && _texture && !(texture.getSize() == _texture->getSize());
-	
+	//bool reset = (resetRect || (!_texture && (_rect == IntRect()))) && _texture && !(texture.getSize() == _texture->getSize());
 	_texture = &texture;
 
-	if(reset) resetTextureRect();
+	//if(reset)
+		resetTextureRect();
 }
 
 const Texture* Anim_Sprite::getTexture() const
@@ -66,10 +66,8 @@ void Anim_Sprite::resetTextureRect()
 	int width = _texture->getSize().x / _frames.x;
 	int height = _texture->getSize().y / _frames.y;
 
-	setOrigin(((float)width)/2, ((float)height)/2);
-
 	const IntRect rectangle{
-		static_cast<int>(_frame.x * width),
+		static_cast<int>(_frame.x*width),
 		static_cast<int>(_frame.y*height),
 		width,
 		height
@@ -81,6 +79,8 @@ void Anim_Sprite::resetTextureRect()
 		updatePositions();
 		updateTexCoords();
 	}
+
+	setOrigin(((float)width)/2, ((float)height)/2);
 }
 
 const IntRect& Anim_Sprite::getTextureRect() const

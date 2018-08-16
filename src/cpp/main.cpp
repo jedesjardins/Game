@@ -16,12 +16,15 @@
 struct Window_State
 {
 	bool fullscreen;
+	bool use_max_resolution;
 	bool borderless;
 	sf::Vector2u screen_dimensions;
 	sf::Vector2u max_screen_dimensions;
 };
 
 Window_State WINDOW_STATE;
+
+typedef std::unordered_map<std::string, sf::Texture*> Resource_Map;
 
 // These files are dropped in as source, no accompanying cpp files
 #include "collision.hpp"
@@ -34,8 +37,9 @@ void read_config(sol::state &lua, sf::RenderWindow &window)
 
 	lua.script_file(std::string(SOURCE_DIR)+"/config.lua", empty_env);
 
-	WINDOW_STATE.screen_dimensions.x = (unsigned int)empty_env["WINDOW_X"] > 640 ? empty_env["WINDOW_X"] : 640;
-	WINDOW_STATE.screen_dimensions.y = (unsigned int)empty_env["WINDOW_Y"] > 480 ? empty_env["WINDOW_Y"] : 480;
+	WINDOW_STATE.screen_dimensions.x = (unsigned int)empty_env["RES_X"] > 640 ? empty_env["RES_X"] : 640;
+	WINDOW_STATE.screen_dimensions.y = (unsigned int)empty_env["RES_Y"] > 480 ? empty_env["RES_Y"] : 480;
+	WINDOW_STATE.use_max_resolution = empty_env["USE_MAX_RESOLUTION"];
 	WINDOW_STATE.fullscreen = empty_env["FULLSCREEN"];
 	WINDOW_STATE.borderless = empty_env["BORDERLESS"];
 
@@ -44,7 +48,10 @@ void read_config(sol::state &lua, sf::RenderWindow &window)
 		sf::VideoMode best_mode{0, 0};
 		for(auto mode: sf::VideoMode::getFullscreenModes())
 			if((mode.width > best_mode.width && mode.height > best_mode.height) || 
-				(mode.width == WINDOW_STATE.screen_dimensions.x && mode.height == WINDOW_STATE.screen_dimensions.y))
+				(!WINDOW_STATE.use_max_resolution && 
+				mode.width == WINDOW_STATE.screen_dimensions.x &&
+				mode.height == WINDOW_STATE.screen_dimensions.y
+			))
 				best_mode = mode;
 
 		WINDOW_STATE.screen_dimensions = {best_mode.width, best_mode.height};
@@ -92,28 +99,30 @@ int main()
 			sol::lib::io
 		);
 	std::string path = lua["package"]["path"];
-	std::string new_path;
-	new_path.append(SOURCE_DIR).append("/?.lua;").append(SOURCE_DIR).append("/?/init.lua;").append(path);
-	lua["package"]["path"] = new_path;
-	//lua["package"]["path"] = std::string(SOURCE_DIR)+"/?.lua;"+std::string(SOURCE_DIR)+"/?/init.lua;"+lua["package"]["path"];
-	//lua["ROOT_DIR"] = SOURCE_DIR;
-	//lua.script("package.path = ROOT_DIR..'/?.lua;'..ROOT_DIR..'/?/init.lua;'..package.path");
+
 
 	sf::RenderWindow window;
-
 	read_config(lua, window);
+	ImGui::SFML::Init(window);
 
-	std::unordered_map<std::string, sf::Texture*> resources;
+	Resource_Map resources;
+
 	sf::Font font;
-
 	if(!font.loadFromFile(std::string(SOURCE_DIR)+"/resources/basis33.ttf"))
 		std::cout << "Couldn't load script" << std::endl;
 
-	ImGui::SFML::Init(window);
 
+	std::string new_path;
+	new_path.append(SOURCE_DIR).append("/?.lua;").append(SOURCE_DIR).append("/?/init.lua;").append(path);
+	lua["package"]["path"] = new_path;
+
+	lua["WINDOW_STATE"] = WINDOW_STATE;
+	lua["Resources"] = resources;
+	lua["Font"] = font;
 	register_functions(lua, window, resources, font);
 	lua.script("require('src.lua.main')");
 	sol::function update = lua["update"];
+
 
 	bool running = true;
 	sf::Clock clock;

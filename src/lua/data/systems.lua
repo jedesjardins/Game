@@ -114,8 +114,8 @@ systems.controlCamera = {
 			
 			local start = view:getCenter() 
 			view:setCenter(
-					math.lerp(start.x, math.round(view_pos.x*TILESIZE/count)),
-					math.lerp(start.y, math.round(-view_pos.y*TILESIZE/count))
+					math.lerp(start.x, view_pos.x*TILESIZE/count, .2),
+					math.lerp(start.y, -view_pos.y*TILESIZE/count, .2)
 				)
 		end)
 	end
@@ -155,8 +155,10 @@ systems.changePosition = {
 			end
 
 			if position and movement then
-				position.x = position.x + vec.x*dt*movement.tps
-				position.y = position.y + vec.y*dt*movement.tps
+				length = math.sqrt(vec.x*vec.x+vec.y*vec.y)
+
+				position.x = position.x + vec.x*dt*movement.tps/length
+				position.y = position.y + vec.y*dt*movement.tps/length
 			end
 		else if command == "change position" then
 			position.x = position.x + vec.x
@@ -717,19 +719,11 @@ systems.basicDraw = {
 			local sprite = components.sprite
 
 			if not sprite.sprite then
-				--[[
-				sprite.sprite = Sprite.new()
-				sprite.sprite:init(sprite.img..".png", sprite.framesx, sprite.framesy, true)
-				]]
 				sprite.sprite = Anim_Sprite.new()
-				sprite.sprite:setTexture(sprite.img..".png")
+				sprite.sprite:setTexture(Resources:getTexture(sprite.img..".png"))
 				sprite.sprite:setFrames(Vec2u.new(sprite.framesx, sprite.framesy))
 			end
-			--[[
-			sprite.sprite:setFrame(sprite.framex-1, sprite.framey-1)
-			sprite.sprite:setPosition(position.x*TILESIZE, -position.y*TILESIZE)
-			sprite.sprite:setRotation(-(position.r or 0))
-			]]
+
 			sprite.sprite:setFrame(Vec2u.new(sprite.framex-1, sprite.framey-1))
 			sprite.sprite:setPosition(position.x*TILESIZE, -position.y*TILESIZE)
 			sprite.sprite:setRotation(-(position.r or 0))

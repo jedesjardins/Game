@@ -13,7 +13,7 @@ class UI_Text: public Transformable, public Drawable
 {
 public:
 	UI_Text();
-	UI_Text(const String &string, const Font &font, unsigned int characterSize=30);
+	UI_Text(const std::string &string, const Font &font, unsigned int characterSize=30);
 
 	void setString(const String& string);
 	const String& getString();

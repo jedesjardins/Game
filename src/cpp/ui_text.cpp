@@ -64,7 +64,7 @@ UI_Text::UI_Text():
 	setOrigin(lb.left, _baseLineOffset);
 }
 
-UI_Text::UI_Text(const String& string, const Font& font, unsigned int characterSize):
+UI_Text::UI_Text(const std::string& string, const Font& font, unsigned int characterSize):
 	_string(string),
 	_font(&font),
 	_characterSize(characterSize),
