@@ -1,6 +1,6 @@
 LUA_FOLDER = (...):match("(.-)[^%.]+$")
 
---print(LUA_FOLDER)
+TILESIZE = 16
 
 require(LUA_FOLDER .. 'engine.generics')
 

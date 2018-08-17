@@ -59,11 +59,11 @@ end
 function State:draw()
 	self.view:makeTarget()
 
-	self.title:draw()
+	Window:draw(self.title)
 	for i, string in ipairs(self.items) do
-		string:draw()
+		Window:draw(string)
 	end
-	self.pointer:draw()
+	Window:draw(self.pointer)
 end
 
 function State:destroy() end

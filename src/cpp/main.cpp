@@ -111,15 +111,16 @@ int main()
 	if(!font.loadFromFile(std::string(SOURCE_DIR)+"/resources/basis33.ttf"))
 		std::cout << "Couldn't load script" << std::endl;
 
+	register_functions(lua, window);
 
 	std::string new_path;
 	new_path.append(SOURCE_DIR).append("/?.lua;").append(SOURCE_DIR).append("/?/init.lua;").append(path);
 	lua["package"]["path"] = new_path;
 
 	lua["WINDOW_STATE"] = WINDOW_STATE;
+	lua["Window"] = &window;
 	lua["Resources"] = resources;
 	lua["Font"] = font;
-	register_functions(lua, window, resources, font);
 	lua.script("require('src.lua.main')");
 	sol::function update = lua["update"];
 

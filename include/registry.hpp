@@ -2,11 +2,20 @@
 
 using KEYS = sf::Keyboard::Key;
 
-void register_functions(sol::state &lua, sf::RenderWindow &window, 
-						std::unordered_map<std::string, sf::Texture *> &resources,
-						sf::Font &font)
+void register_functions(sol::state &lua, sf::RenderWindow &window)
 {
-	lua["TILESIZE"] = 16;
+	lua.new_usertype<sf::RenderWindow>("RenderWindow",
+		"", sol::no_constructor,
+		/*
+		"setView", [](){},
+		"getView", [](){},
+		"clear", [](){},
+		*/
+		"draw", [](sf::RenderWindow &window, const sf::Drawable &drawable)
+			{
+				window.draw(drawable);
+			}
+	);
 
 	lua.new_usertype<Window_State>("Window_State",
 		"", sol::no_constructor,
@@ -39,11 +48,8 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 		"mousePos", &Input::getMousePosition,
 		"mouseRight", &Input::getMouseRight,
 		"mouseLeft", &Input::getMouseLeft,
-		"mousePosition", &Input::getMousePosition,
-		"mouseViewPosition", [&window](Input &input, sf::View &view) -> sf::Vector2f
-		{
-			return input.getMouseViewPosition(window, view);
-		}
+		"mouseLocalPosition", &Input::getMousePosition,
+		"mouseGlobalPosition", &Input::getMouseViewPosition
 	);
 
 	lua.new_usertype<RandomGenerator>("Random",
@@ -85,6 +91,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 	);
 
 	lua.new_usertype<sf::Anim_Sprite>("Anim_Sprite",
+		sol::base_classes, sol::bases<sf::Drawable>(),
 		"setPosition", sol::overload(
 				static_cast<void (sf::Anim_Sprite::*)(float, float)>(&sf::Anim_Sprite::setPosition),
 				static_cast<void (sf::Anim_Sprite::*)(const sf::Vector2f&)>(&sf::Anim_Sprite::setPosition)
@@ -92,11 +99,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 		"setRotation", &sf::Anim_Sprite::setRotation,
 		"setTexture", &sf::Anim_Sprite::setTexture,
 		"setFrames", &sf::Anim_Sprite::setFrames,
-		"setFrame", &sf::Anim_Sprite::setFrame,
-		"draw", [&window](sf::Anim_Sprite &sprite)
-			{
-				window.draw(sprite);
-			}
+		"setFrame", &sf::Anim_Sprite::setFrame
 	);
 
 	lua.new_usertype<sf::View>("View",
@@ -117,6 +120,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 	);
 
 	lua.new_usertype<sf::UI_Text>("UI_Text",
+		sol::base_classes, sol::bases<sf::Drawable>(),
 		"new", sol::constructors<
 				sf::UI_Text(),
 				sf::UI_Text(const std::string &, const sf::Font &, unsigned int)
@@ -128,12 +132,17 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 		"setScale", sol::overload(
 				static_cast<void (sf::UI_Text::*)(float, float)>(&sf::UI_Text::setScale),
 				static_cast<void (sf::UI_Text::*)(const sf::Vector2f&)>(&sf::UI_Text::scale)
-			),
-		"draw", [&window](sf::UI_Text *text)
-			{
-				window.draw(*text);
-			}
+			)
 	);
+
+	/*
+	lua.new_usertype<sf::RenderTexture>("RenderTexture",
+		"create",
+		"setView",
+		"getView",
+		"display",
+	);
+	*/
 
 	lua.new_usertype<sf::RenderTexture>("RenderTexture",
 		"", sol::no_constructor,
@@ -174,6 +183,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			})
 	);
 
+	/*
 	lua.new_usertype<sf::Sprite>("Sprite",
 		"setPosition", static_cast<void (sf::Sprite::*)(float, float)>(&sf::Sprite::setPosition),
 		"setRotation", static_cast<void (sf::Sprite::*)(float)>(&sf::Sprite::setRotation),
@@ -226,6 +236,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 				sprite.setColor({r, g, b, a});
 			}
 	);
+	*/
 
 	lua.set_function("draw", [&window](sf::Sprite &sprite)
 		{
@@ -237,6 +248,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			window.draw(sprite);
 		});
 
+	/*
 	lua.set_function("draw_box", [&window, &resources](std::string texture_name, float ox, float oy, float ow, float oh)
 		{
 			//TODO
@@ -291,7 +303,9 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			window.setView(old_view);
 
 		});
+	*/
 
+	/*
 	lua.set_function("draw_Mytext", [&font, &window](const std::string &str, float x, float y, float h)
 		{
 			// save old view
@@ -315,7 +329,9 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 			// return view to normal
 			window.setView(view);
 		});
+	*/
 
+	/*
 	lua.set_function("draw_text", [&font, &window](const std::string &str, float x, float y, float h)
 		{
 			auto view = window.getView();
@@ -374,65 +390,8 @@ void register_functions(sol::state &lua, sf::RenderWindow &window,
 				window.draw(sprite);
 				location += advance;
 			}
-
-			/*
-			auto location = 0;
-			for(int i = 0; i < 26; ++i)
-			{
-				auto glyph = font.getGlyph(i + 65, 50, false);
-				auto advance = glyph.advance;
-				auto bounds = glyph.bounds;
-				auto rect = glyph.textureRect;
-				std::cout << char(i + 65) << "\n";
-				std::cout << advance << "\n";
-				std::cout << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << "\n";
-				std::cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << "\n" << std::endl;
-				sf::Sprite sprite;
-				sprite.setTexture(font.getTexture(50));
-				sprite.setTextureRect(rect);
-				sprite.setOrigin(-bounds.left, -bounds.top);
-				sprite.setPosition(location, 100); //bounds.height+bounds.top);
-				window.draw(sprite);
-				location += advance;
-				glyph = font.getGlyph(i + 97, 50, false);
-				advance = glyph.advance;
-				bounds = glyph.bounds;
-				rect = glyph.textureRect;
-				std::cout << char(i + 97) << "\n";
-				std::cout << advance << "\n";
-				std::cout << bounds.left << " " << bounds.top << " " << bounds.width << " " << bounds.height << "\n";
-				std::cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << "\n" << std::endl;
-				sprite.setTexture(font.getTexture(50));
-				sprite.setTextureRect(rect);
-				sprite.setOrigin(-bounds.left, -bounds.top);
-				sprite.setPosition(location, 100); //bounds.height+bounds.top);
-				window.draw(sprite);
-				location += advance;
-			}
-			*/
-			/*
-			// save old view
-			auto view = window.getView();
-			// set view to screen size
-			auto newview = window.getDefaultView();
-			window.setView(newview);
-			// set size of the font
-			auto size = newview.getSize();
-			sf::Text text{str, font, (unsigned int)(size.y*h)};
-			// fix the weird starting offset
-			auto lb = text.getLocalBounds();
-			auto gb = text.getLocalBounds();
-			std::cout << gb.left << " " << gb.top << " " << gb.width << " " << gb.height << std::endl;
-			std::cout << lb.left << " " << lb.top << " " << lb.width << " " << lb.height << std::endl;
-			std::cout << size.y << " " << size.y*h << " " << lb.height << "\n" << std::endl;
-			text.setOrigin(lb.left, lb.top+lb.height);
-			text.setScale((size.y*h)/lb.height, (size.y*h)/lb.height);
-			text.setPosition(size.x*x, size.y*(1-y));
-			window.draw(text);
-			// return view to normal
-			window.setView(view);
-			*/
 		});
+	*/
 
 	lua["collision_check"] = &collide;
 
