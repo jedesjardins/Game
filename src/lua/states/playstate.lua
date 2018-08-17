@@ -45,12 +45,9 @@ function state:enter()
 	ecs.em.camera_id = ecs.em:createEntity("camera", {view, "follow"})
 
 	ecs.em.player_id = ecs.em:createEntity("man", {map.startpoint.x, map.startpoint.y})
-	--[[
+
 	ecs.em:createEntity("sword", {map.startpoint.x, map.startpoint.y+2})
-	--ecs.em:createEntity("sword", {map.startpoint.x, map.startpoint.y-3})
 	ecs.em:createEntity("block", {map.startpoint.x+2, map.startpoint.y+2})
-	--ecs.em:createEntity("block", {-2, 2})
-	]]
 
 	ecs.map = map
 	map.ecs = ecs
@@ -62,10 +59,6 @@ function state:enter()
 	self.toggle_demo = false
 	self.env = createSafeEnvironment()
 	self:registerConsoleFunctions()
-
-	self.text = UI_Text.new("Hello", Font, 100)
-	self.text:setPosition(0, 0)
-	self.text:setScale(0.25, 0.25)
 end
 
 function state:registerSystems(ecs)
@@ -219,8 +212,6 @@ function state:draw()
 	--self.map.view:makeTarget()
 	draw(self.map.floor.sprite)
 	self.ecs:draw()
-
-	self.text:draw()
 end
 
 function state:exit()

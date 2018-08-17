@@ -1,7 +1,7 @@
 --[[
 Fullscreen mode
 ]]
-FULLSCREEN = false
+FULLSCREEN = true
 --[[
 if FULLSCREEN is enabled then USE_MAX_RESOLUTION=true will override 
 RES_X and RES_Y with the maximum supported by the GPU.
@@ -14,5 +14,5 @@ BORDERLESS = false
 --[[
 Screen Resolution
 ]]
-RES_X = 960
-RES_Y = 720
+RES_X = 640
+RES_Y = 480

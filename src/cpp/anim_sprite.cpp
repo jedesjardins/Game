@@ -36,7 +36,7 @@ const Texture* Anim_Sprite::getTexture() const
 
 void Anim_Sprite::setFrames(const Vector2u &frames)
 {
-	if(frames.x == 0 || frames.y == 0)
+	if(frames.x == 0 || frames.y == 0 || frames == _frames)
 		return;
 
 	_frames = frames;
@@ -50,6 +50,9 @@ const Vector2u& Anim_Sprite::getFrames()
 
 void Anim_Sprite::setFrame(const Vector2u &frame)
 {
+	if(frame == _frame)
+		return;
+
 	_frame = frame;
 	resetTextureRect();
 }
@@ -66,6 +69,8 @@ void Anim_Sprite::resetTextureRect()
 	int width = _texture->getSize().x / _frames.x;
 	int height = _texture->getSize().y / _frames.y;
 
+	setOrigin(((float)width)/2, ((float)height)/2);
+
 	const IntRect rectangle{
 		static_cast<int>(_frame.x*width),
 		static_cast<int>(_frame.y*height),
@@ -79,8 +84,6 @@ void Anim_Sprite::resetTextureRect()
 		updatePositions();
 		updateTexCoords();
 	}
-
-	setOrigin(((float)width)/2, ((float)height)/2);
 }
 
 const IntRect& Anim_Sprite::getTextureRect() const
