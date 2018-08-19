@@ -6,11 +6,9 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 {
 	lua.new_usertype<sf::RenderWindow>("RenderWindow",
 		"", sol::no_constructor,
-		/*
-		"setView", [](){},
-		"getView", [](){},
-		"clear", [](){},
-		*/
+		"setView", &sf::RenderWindow::setView,
+		"getView", &sf::RenderWindow::getView,
+		"clear", &sf::RenderWindow::clear,
 		"draw", [](sf::RenderWindow &window, const sf::Drawable &drawable)
 			{
 				window.draw(drawable);
@@ -102,6 +100,63 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 		"setFrame", &sf::Anim_Sprite::setFrame
 	);
 
+	lua.new_usertype<sf::Sprite>("Sprite",
+		"setPosition", static_cast<void (sf::Sprite::*)(float, float)>(&sf::Sprite::setPosition),
+		"setRotation", static_cast<void (sf::Sprite::*)(float)>(&sf::Sprite::setRotation),
+		"setOrigin", static_cast<void (sf::Sprite::*)(float, float)>(&sf::Sprite::setOrigin),
+		"setTexture", &sf::Sprite::setTexture,
+		"setTextureRect", [](sf::Sprite &sprite, int x, int y, int w, int h)
+			{
+				sprite.setTextureRect({x, y, w, h});
+			},
+		"setFrame", [](sf::Sprite &sprite, int framex, int framey)
+			{
+				auto rect = sprite.getTextureRect();
+
+				sprite.setTextureRect({framex*rect.width, framey*rect.height, rect.width, rect.height});
+			},
+		"setColor", [](sf::Sprite &sprite, sf::Uint8 r, sf::Uint8 g, sf::Uint8 b, sf::Uint8 a)
+			{
+				sprite.setColor({r, g, b, a});
+			}
+			/*,
+		//Loads texture, sets textureRect, sets 
+		"init", [&resources](sf::Sprite &sprite, std::string id, unsigned int wtiles, unsigned int htiles, bool setOrigin)
+			{
+				sf::Texture *texture;
+
+				if(!resources[id])
+				{
+					texture = new sf::Texture();
+					texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
+
+					resources[id] = texture;
+				}
+				else
+					texture = resources[id];
+
+				sprite.setTexture(*texture, true);
+
+				auto rect = sprite.getTextureRect();
+
+				float framew = (float)(rect.width)/wtiles;
+				float frameh = (float)(rect.height)/htiles;
+
+				sprite.setTextureRect({0, 0, (int)framew, (int)frameh});
+
+				if(setOrigin)
+					sprite.setOrigin(framew/2, frameh/2);
+			},
+		"initFromTarget", [](sf::Sprite &sprite, sf::RenderTexture &target)
+			{
+				sprite.setTexture(target.getTexture());
+
+				auto rect = sprite.getTextureRect();
+				sprite.setOrigin(rect.width/2, rect.height/2);
+			}
+		*/
+	);
+
 	lua.new_usertype<sf::View>("View",
 		"setCenter", sol::overload(
 				static_cast<void (sf::View::*)(float, float)>(&sf::View::setCenter),
@@ -137,9 +192,15 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 
 	/*
 	lua.new_usertype<sf::RenderTexture>("RenderTexture",
-		"create",
-		"setView",
-		"getView",
+		"create", &sf::RenderWindow::create,
+		"getTexture", &sf::RenderWindow::getTexture,
+		"setView", &sf::RenderWindow::setView,
+		"getView", &sf::RenderWindow::getView,
+		"clear", &sf::RenderWindow::clear,
+		"draw", [](sf::RenderWindow &window, const sf::Drawable &drawable)
+			{
+				window.draw(drawable);
+			}
 		"display",
 	);
 	*/

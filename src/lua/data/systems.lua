@@ -744,7 +744,7 @@ systems.basicDraw = {
 		table.sort(drawItems, sortfunc)
 
 		for _, sprite in ipairs(drawItems) do
-			sprite[2]:draw()
+			Window:draw(sprite[2])
 		end
 	end
 }

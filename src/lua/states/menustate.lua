@@ -57,7 +57,8 @@ function State:update(dt, input)
 end
 
 function State:draw()
-	self.view:makeTarget()
+	Window:setView(self.view)
+	--self.view:makeTarget()
 
 	Window:draw(self.title)
 	for i, string in ipairs(self.items) do

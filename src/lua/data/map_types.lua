@@ -58,8 +58,11 @@ function Floor.new(rect, options)
 
 	self.spritesheet = spritesheets[options.spritesheet_name or "grassy_cave"]
 	if not self.spritesheet.sprite then
-		self.spritesheet.sprite = Sprite.new()
-		self.spritesheet.sprite:init(self.spritesheet.file, self.spritesheet.w, self.spritesheet.h, false)
+		--self.spritesheet.sprite = Sprite.new()
+		--self.spritesheet.sprite:init(self.spritesheet.file, self.spritesheet.w, self.spritesheet.h, false)
+
+		local sprite = Anim_Sprite.new()
+		sprite.setTexture(Resources(self.spritesheet.file))
 	end
 
 	self.texture = RenderTexture.new(self.w*TILESIZE, self.h*TILESIZE)
