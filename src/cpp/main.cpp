@@ -111,7 +111,7 @@ int main()
 	if(!font.loadFromFile(std::string(SOURCE_DIR)+"/resources/basis33.ttf"))
 		std::cout << "Couldn't load script" << std::endl;
 
-	register_functions(lua, window);
+	register_functions(lua);
 
 	std::string new_path;
 	new_path.append(SOURCE_DIR).append("/?.lua;").append(SOURCE_DIR).append("/?/init.lua;").append(path);

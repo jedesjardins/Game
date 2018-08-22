@@ -62,7 +62,8 @@ function Floor.new(rect, options)
 		--self.spritesheet.sprite:init(self.spritesheet.file, self.spritesheet.w, self.spritesheet.h, false)
 
 		local sprite = Anim_Sprite.new()
-		sprite.setTexture(Resources(self.spritesheet.file))
+		sprite:setTexture(Resources:getTexture(self.spritesheet.file))
+		self.spritesheet.sprite = sprite
 	end
 
 	self.texture = RenderTexture.new(self.w*TILESIZE, self.h*TILESIZE)
@@ -114,7 +115,7 @@ function Floor:render(rerender)
 			local framex = frame % sprite_info.w
 			local framey = math.floor(frame/sprite_info.w)
 
-			sprite:setFrame(framex, framey)
+			sprite:setFrame(Vec2u.new(framex, framey))
 			self.texture:draw(sprite)
 		end
 	end

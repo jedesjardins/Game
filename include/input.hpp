@@ -27,7 +27,6 @@ public:
 	bool update(sf::Window &window);
 	KEYSTATE getKeyState(sf::Keyboard::Key);
 	sf::Vector2i getMousePosition();
-	sf::Vector2f getMouseViewPosition(const sf::RenderWindow &window, const sf::View &);
 	KEYSTATE getMouseRight();
 	KEYSTATE getMouseLeft();
 };

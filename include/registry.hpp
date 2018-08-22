@@ -2,17 +2,49 @@
 
 using KEYS = sf::Keyboard::Key;
 
-void register_functions(sol::state &lua, sf::RenderWindow &window)
+void register_functions(sol::state &lua)
 {
 	lua.new_usertype<sf::RenderWindow>("RenderWindow",
 		"", sol::no_constructor,
 		"setView", &sf::RenderWindow::setView,
 		"getView", &sf::RenderWindow::getView,
 		"clear", &sf::RenderWindow::clear,
+		"mapPixelToCoords", sol::overload(
+				static_cast<sf::Vector2f (sf::RenderWindow::*)(const sf::Vector2i&) const>(&sf::RenderWindow::mapPixelToCoords),
+				static_cast<sf::Vector2f (sf::RenderWindow::*)(const sf::Vector2i&, const sf::View &) const>(&sf::RenderWindow::mapPixelToCoords)
+			),
+		"mapCoordsToPixel", sol::overload(
+				static_cast<sf::Vector2i (sf::RenderWindow::*)(const sf::Vector2f&) const>(&sf::RenderWindow::mapCoordsToPixel),
+				static_cast<sf::Vector2i (sf::RenderWindow::*)(const sf::Vector2f&, const sf::View &) const>(&sf::RenderWindow::mapCoordsToPixel)
+			),
 		"draw", [](sf::RenderWindow &window, const sf::Drawable &drawable)
 			{
 				window.draw(drawable);
 			}
+	);
+
+	lua.new_usertype<sf::RenderTexture>("RenderTexture",
+		"create", [](sf::RenderTexture &target, unsigned int w, unsigned int h)
+			{
+				target.create(w, h);
+			},
+		"getTexture", &sf::RenderTexture::getTexture,
+		"setView", &sf::RenderTexture::setView,
+		"getView", &sf::RenderTexture::getView,
+		"mapPixelToCoords", sol::overload(
+				static_cast<sf::Vector2f (sf::RenderTexture::*)(const sf::Vector2i&) const>(&sf::RenderTexture::mapPixelToCoords),
+				static_cast<sf::Vector2f (sf::RenderTexture::*)(const sf::Vector2i&, const sf::View &) const>(&sf::RenderTexture::mapPixelToCoords)
+			),
+		"mapCoordsToPixel", sol::overload(
+				static_cast<sf::Vector2i (sf::RenderTexture::*)(const sf::Vector2f&) const>(&sf::RenderTexture::mapCoordsToPixel),
+				static_cast<sf::Vector2i (sf::RenderTexture::*)(const sf::Vector2f&, const sf::View &) const>(&sf::RenderTexture::mapCoordsToPixel)
+			),
+		"clear", &sf::RenderTexture::clear,
+		"draw", [](sf::RenderTexture &window, const sf::Drawable &drawable)
+			{
+				window.draw(drawable);
+			},
+		"display", &sf::RenderTexture::display
 	);
 
 	lua.new_usertype<Window_State>("Window_State",
@@ -46,8 +78,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 		"mousePos", &Input::getMousePosition,
 		"mouseRight", &Input::getMouseRight,
 		"mouseLeft", &Input::getMouseLeft,
-		"mouseLocalPosition", &Input::getMousePosition,
-		"mouseGlobalPosition", &Input::getMouseViewPosition
+		"mousePosition", &Input::getMousePosition
 	);
 
 	lua.new_usertype<RandomGenerator>("Random",
@@ -119,42 +150,6 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 			{
 				sprite.setColor({r, g, b, a});
 			}
-			/*,
-		//Loads texture, sets textureRect, sets 
-		"init", [&resources](sf::Sprite &sprite, std::string id, unsigned int wtiles, unsigned int htiles, bool setOrigin)
-			{
-				sf::Texture *texture;
-
-				if(!resources[id])
-				{
-					texture = new sf::Texture();
-					texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
-
-					resources[id] = texture;
-				}
-				else
-					texture = resources[id];
-
-				sprite.setTexture(*texture, true);
-
-				auto rect = sprite.getTextureRect();
-
-				float framew = (float)(rect.width)/wtiles;
-				float frameh = (float)(rect.height)/htiles;
-
-				sprite.setTextureRect({0, 0, (int)framew, (int)frameh});
-
-				if(setOrigin)
-					sprite.setOrigin(framew/2, frameh/2);
-			},
-		"initFromTarget", [](sf::Sprite &sprite, sf::RenderTexture &target)
-			{
-				sprite.setTexture(target.getTexture());
-
-				auto rect = sprite.getTextureRect();
-				sprite.setOrigin(rect.width/2, rect.height/2);
-			}
-		*/
 	);
 
 	lua.new_usertype<sf::View>("View",
@@ -167,11 +162,7 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 				static_cast<void (sf::View::*)(float, float)>(&sf::View::setSize),
 				static_cast<void (sf::View::*)(const sf::Vector2f&)>(&sf::View::setSize)
 			),
-		"getSize", &sf::View::getSize,
-		"makeTarget", [&window](sf::View &view)
-			{
-				window.setView(view);
-			}
+		"getSize", &sf::View::getSize
 	);
 
 	lua.new_usertype<sf::UI_Text>("UI_Text",
@@ -189,270 +180,6 @@ void register_functions(sol::state &lua, sf::RenderWindow &window)
 				static_cast<void (sf::UI_Text::*)(const sf::Vector2f&)>(&sf::UI_Text::scale)
 			)
 	);
-
-	/*
-	lua.new_usertype<sf::RenderTexture>("RenderTexture",
-		"create", &sf::RenderWindow::create,
-		"getTexture", &sf::RenderWindow::getTexture,
-		"setView", &sf::RenderWindow::setView,
-		"getView", &sf::RenderWindow::getView,
-		"clear", &sf::RenderWindow::clear,
-		"draw", [](sf::RenderWindow &window, const sf::Drawable &drawable)
-			{
-				window.draw(drawable);
-			}
-		"display",
-	);
-	*/
-
-	lua.new_usertype<sf::RenderTexture>("RenderTexture",
-		"", sol::no_constructor,
-		"new", [](unsigned int w, unsigned int h) -> sf::RenderTexture*
-			{
-				sf::RenderTexture* renderTexture = new sf::RenderTexture();
-				renderTexture->create(w, h);
-				return renderTexture;
-			},
-		"init", [](sf::RenderTexture *renderTexture, sf::Uint8 alpha)
-			{
-				renderTexture->clear({0, 0, 0, alpha});
-				renderTexture->display();
-			},
-		"delete", [](sf::RenderTexture *renderTexture)
-			{
-				delete renderTexture;
-			},
-		"draw", [](sf::RenderTexture *renderTexture, sf::Sprite &sprite)
-			{
-				renderTexture->draw(sprite);
-			},
-		"__gc", sol::destructor([](sf::RenderTexture *renderTexture)
-			{
-				if(renderTexture) delete renderTexture;
-			})
-	);
-
-	lua.new_usertype<sf::Texture>("Texture",
-		"", sol::no_constructor,
-		"delete", [](sf::Texture *texture)
-			{
-				delete texture;
-			},
-		"__gc", sol::destructor([](sf::Texture *texture)
-			{
-				if(texture) delete texture;
-			})
-	);
-
-	/*
-	lua.new_usertype<sf::Sprite>("Sprite",
-		"setPosition", static_cast<void (sf::Sprite::*)(float, float)>(&sf::Sprite::setPosition),
-		"setRotation", static_cast<void (sf::Sprite::*)(float)>(&sf::Sprite::setRotation),
-		"setOrigin", static_cast<void (sf::Sprite::*)(float, float)>(&sf::Sprite::setOrigin),
-		"init", [&resources](sf::Sprite &sprite, std::string id, unsigned int wtiles, unsigned int htiles, bool setOrigin)
-			{
-				sf::Texture *texture;
-
-				if(!resources[id])
-				{
-					texture = new sf::Texture();
-					texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+id).c_str());
-
-					resources[id] = texture;
-				}
-				else
-					texture = resources[id];
-
-				sprite.setTexture(*texture, true);
-
-				auto rect = sprite.getTextureRect();
-
-				float framew = (float)(rect.width)/wtiles;
-				float frameh = (float)(rect.height)/htiles;
-
-				sprite.setTextureRect({0, 0, (int)framew, (int)frameh});
-
-				if(setOrigin)
-					sprite.setOrigin(framew/2, frameh/2);
-			},
-		"initFromTarget", [](sf::Sprite &sprite, sf::RenderTexture &target)
-			{
-				sprite.setTexture(target.getTexture());
-
-				auto rect = sprite.getTextureRect();
-				sprite.setOrigin(rect.width/2, rect.height/2);
-			},
-		"setTextureRect", [](sf::Sprite &sprite, int x, int y, int w, int h)
-			{
-				sprite.setTextureRect({x, y, w, h});
-			},
-		"setFrame", [](sf::Sprite &sprite, int framex, int framey)
-			{
-				auto rect = sprite.getTextureRect();
-
-				sprite.setTextureRect({framex*rect.width, framey*rect.height, rect.width, rect.height});
-			},
-		"setColor", [](sf::Sprite &sprite, sf::Uint8 r, sf::Uint8 g, sf::Uint8 b, sf::Uint8 a)
-			{
-				sprite.setColor({r, g, b, a});
-			}
-	);
-	*/
-
-	lua.set_function("draw", [&window](sf::Sprite &sprite)
-		{
-			window.draw(sprite);
-		});
-
-	lua.set_function("draw_a", [&window](sf::Drawable &sprite)
-		{
-			window.draw(sprite);
-		});
-
-	/*
-	lua.set_function("draw_box", [&window, &resources](std::string texture_name, float ox, float oy, float ow, float oh)
-		{
-			//TODO
-			sf::Texture *texture;
-
-			if(!resources[texture_name])
-			{
-				texture = new sf::Texture();
-				texture->loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+texture_name).c_str());
-
-				resources[texture_name] = texture;
-			}
-			else
-				texture = resources[texture_name];
-
-			auto old_view = window.getView();
-			auto default_view = window.getDefaultView();
-
-			auto size = default_view.getSize();
-
-			window.setView(default_view);
-
-			sf::Sprite sprite;
-			sprite.setTexture(*texture);
-
-			auto old_rect = sprite.getTextureRect();
-			int tw = old_rect.width/3;
-			int th = old_rect.height/3;
-
-			sf::IntRect new_rect;
-			new_rect.width = tw;
-			new_rect.height = th;
-
-			auto box_width = ow*size.x;
-			auto box_height = oh*size.y;
-
-			//top left
-			sprite.setTextureRect(new_rect);
-			//sprite.setPosition(ox*size.x, oy*size.y);
-			window.draw(sprite);
-
-			//top middle
-			new_rect.left = tw;
-			new_rect.top = th;
-			sprite.setTextureRect(new_rect);
-			//sprite.setPosition();
-			window.draw(sprite);
-
-
-
-
-			window.setView(old_view);
-
-		});
-	*/
-
-	/*
-	lua.set_function("draw_Mytext", [&font, &window](const std::string &str, float x, float y, float h)
-		{
-			// save old view
-			auto view = window.getView();
-			// set view to screen size
-			auto newview = window.getDefaultView();
-			window.setView(newview);
-			// set size of the font
-			auto size = newview.getSize();
-			sf::UI_Text text{str, font, (unsigned int)(size.y*h)};
-			// fix the weird starting offset
-			auto lb = text.getLocalBounds();
-			auto gb = text.getLocalBounds();
-
-			std::cout << text._baseLineOffset << std::endl;
-			//text.setOrigin(lb.left, text._baseLineOffset);
-			//text.setScale((size.y*h)/lb.height, (size.y*h)/lb.height);
-			text.setPosition(size.x*x, size.y*(1-y));
-			
-			window.draw(text);
-			// return view to normal
-			window.setView(view);
-		});
-	*/
-
-	/*
-	lua.set_function("draw_text", [&font, &window](const std::string &str, float x, float y, float h)
-		{
-			auto view = window.getView();
-			auto newview = window.getDefaultView();
-			window.setView(newview);
-
-			auto size = newview.getSize();
-			int location = size.x*x;
-
-			int totalAdvance = 0;
-			int totalWidth = 0;
-			int maxHeight = 0;
-
-			//std::cout << str << std::endl;
-
-			for(char c : str)
-			{
-				auto glyph = font.getGlyph(c, 100, false);
-
-				totalAdvance += glyph.advance;
-
-				//std::cout << " " << glyph.bounds.width;
-				totalWidth += glyph.bounds.width;
-				maxHeight = maxHeight < glyph.bounds.height ? glyph.bounds.height : maxHeight;
-			}
-
-			//std::cout << "\n";
-
-			for(char c : str)
-			{
-				auto glyph = font.getGlyph(c, 100, false);
-
-				totalAdvance += glyph.advance;
-
-				//std::cout << " " << glyph.advance;
-				totalWidth += glyph.bounds.width;
-				maxHeight = maxHeight < glyph.bounds.height ? glyph.bounds.height : maxHeight;
-			}
-
-			//std::cout << "\n" << totalAdvance << " " << totalWidth << " " << maxHeight << std::endl;
-
-			for(char c : str)
-			{
-				auto glyph = font.getGlyph(c, 100, false);
-
-				auto advance = glyph.advance;
-				auto bounds = glyph.bounds;
-				auto rect = glyph.textureRect;
-
-				sf::Sprite sprite;
-				sprite.setTexture(font.getTexture(100));
-				sprite.setTextureRect(rect);
-				sprite.setOrigin(-bounds.left, -bounds.top);
-				sprite.setPosition(location, size.y*(1-y));//size.y*(1-h));//(size.y*h)/lb.height);
-
-				window.draw(sprite);
-				location += advance;
-			}
-		});
-	*/
 
 	lua["collision_check"] = &collide;
 

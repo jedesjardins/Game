@@ -102,11 +102,6 @@ sf::Vector2i Input::getMousePosition()
 	return this->mouse_pos;
 }
 
-sf::Vector2f Input::getMouseViewPosition(const sf::RenderWindow &window, const sf::View &view)
-{
-	return window.mapPixelToCoords(this->mouse_pos, view);
-}
-
 KEYSTATE Input::getMouseLeft()
 {
 	return this->mouse_state.x;
