@@ -1,6 +1,12 @@
 #ifndef COLLISION_HPP_
 #define COLLISION_HPP_
 
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/Transform.hpp>
+
+#include <limits>
+
 #include <vector>
 #include <utility>
 #include <cmath>
@@ -254,6 +260,116 @@ projectPoints(const std::pair<double, double> &axis,
 	}
 
 	return {v_min, v_max};	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ *  Project points onto a unit vector
+ */
+const std::pair<float, float> projectPoints2(const sf::Vector2f &axis, const std::vector<sf::Vector2f> &points)
+{
+	float val = axis.x*points[0].x + axis.y*points[0].y; // fix this
+	float min = val;
+	float max = val;
+
+	for(const sf::Vector2f point: points)
+	{
+		val = axis.x*point.x + axis.y*point.y;
+
+		min = min < val ? min : val;
+		max = max > val ? max : val;
+	}
+
+	return {min, max};
+}
+
+
+/*
+ *  Each rect describes a collision box, top and left are the center of the collision rect
+ *  Each transformable describes the transform on the shape, origin around the entity center,
+ *      not the collision center
+ */
+sf::Vector2f collide2(const sf::FloatRect &r1, const sf::FloatRect &r2,
+					  const sf::Transformable &t1 = {}, const sf::Transformable &t2 = {})
+{
+	if(t1.getRotation() != 0 || t1.getRotation() != 0)
+	{
+		//SAT
+		//get points ordered clockwise from top left
+		auto transform1 = t1.getTransform();
+		std::vector<sf::Vector2f> points1 = {
+			transform1.transformPoint(r1.left-r1.width/2, r1.top+r1.height/2),
+			transform1.transformPoint(r1.left+r1.width/2, r1.top+r1.height/2),
+			transform1.transformPoint(r1.left+r1.width/2, r1.top-r1.height/2),
+			transform1.transformPoint(r1.left-r1.width/2, r1.top-r1.height/2),
+		};
+
+		auto transform2 = t2.getTransform();
+		std::vector<sf::Vector2f> points2 = {
+			transform2.transformPoint(r2.left-r2.width/2, r2.top+r2.height/2),
+			transform2.transformPoint(r2.left+r2.width/2, r2.top+r2.height/2),
+			transform2.transformPoint(r2.left+r2.width/2, r2.top-r2.height/2),
+			transform2.transformPoint(r2.left-r2.width/2, r2.top-r2.height/2),
+		};
+
+		//check axis
+		std::vector<sf::Vector2f> axi = {
+			points1[1] - points1[0],
+			points1[0] - points1[3],
+			points2[1] - points2[0],
+			points2[0] - points2[3],
+		};
+
+		float min_overlap = std::numeric_limits<float>::max();
+		sf::Vector2f min_axis;
+
+		for(auto axis : axi)
+		{	
+			//normalize axis
+			float length = sqrt(axis.x*axis.x + axis.y*axis.y);
+			axis /= length;
+
+			const std::pair<float, float> proj1 = projectPoints2(axis, points1);
+			const std::pair<float, float> proj2 = projectPoints2(axis, points2);
+
+			if(proj1.second < proj2.first || proj2.second < proj1.first)
+				//found gap, return no overlap
+				return {};
+			else
+			{
+				float overlap;
+				if(proj1.second - proj2.first < proj2.second - proj1.first)
+					overlap = proj2.first - proj1.second;
+				else
+					overlap = proj2.second - proj1.first;
+
+				if(fabs(overlap) < fabs(min_overlap))
+				{
+					min_overlap = overlap;
+					min_axis = axis;
+				}
+			}
+		}
+		return min_axis*min_overlap;
+	}
+	else
+	{
+		//Regular
+		return {};
+	}
 }
 
 #endif
