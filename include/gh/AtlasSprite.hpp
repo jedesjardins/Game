@@ -8,9 +8,12 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/Transform.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <gh/Batchable.hpp>
+#include <gh/SpriteBatch.hpp>
+
 
 namespace gh
 {
@@ -57,6 +60,6 @@ private:
 	sf::Transform cached;
 };
 
-}
+} //namespace gh
 
 #endif

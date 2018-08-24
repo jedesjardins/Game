@@ -17,6 +17,6 @@ private:
 	virtual void batch(SpriteBatch &) = 0;
 };
 
-}
+} //namespace gh
 
 #endif

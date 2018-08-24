@@ -4,7 +4,17 @@
 #include <iostream>
 #include <sstream>
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowStyle.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
+
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include "sol.hpp"
@@ -158,50 +168,6 @@ int main()
 	fpsText.setFillColor(sf::Color::White);
 
 	Input input;
-
-	gh::TextureAtlas atlas;
-	atlas.setTexturePath(std::string(SOURCE_DIR)+"/resources/sprites/");
-
-	gh::AtlasSprite sprite;
-	sprite.setTexture(atlas.getTexture());
-	sprite.setTextureRect(atlas.getTextureRect("man.png"));
-	sprite.setFrames({8, 4});
-	sprite.setFrame({1, 1});
-	sprite.setPosition(100, 75);
-
-	gh::AtlasSprite sprite2;
-	sprite2.setTexture(atlas.getTexture());
-	sprite2.setTextureRect(atlas.getTextureRect("full_tilesheet.png"));
-	sprite2.setFrames({8, 4});
-	sprite2.setFrame({1, 1});
-	sprite2.setPosition(100, 75);
-
-	gh::SpriteBatch spritebatch;
-	spritebatch.batch(sprite2);
-	spritebatch.batch(sprite);
-	spritebatch.addAtlas(atlas);
-
-	sf::Texture t1, t2;
-	t1.loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+"man.png").c_str());
-	t2.loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+"full_tilesheet.png").c_str());
-
-	gh::AtlasSprite sprite3;
-	sprite3.setTexture(t1);
-	sprite3.setFrames({8, 4});
-	sprite3.setFrame({1, 1});
-	sprite3.setPosition(0, 75);
-
-	gh::AtlasSprite sprite4;
-	sprite4.setTexture(t2);
-	sprite4.setFrames({8, 4});
-	sprite4.setFrame({1, 1});
-	sprite4.setPosition(50, 75);
-
-	sf::View view;
-	view.setCenter(WINDOW_STATE.screen_dimensions.x/2, WINDOW_STATE.screen_dimensions.y/2);
-	view.setSize(WINDOW_STATE.screen_dimensions.x, WINDOW_STATE.screen_dimensions.y);
-
-	window.setView(view);
 	
 	while (running)
 	{
@@ -216,12 +182,10 @@ int main()
 
 		window.clear({0, 0, 0, 255});
 		running &= (bool)update(dt.asSeconds(), input);
-		//draw_sprites(window, sprite3, sprite4);
-		//draw_batch(window, atlas, sprite2, sprite);
 		
 		ImGui::SFML::Render(window);
 
-		window.setView(view);
+		window.setView(window.getDefaultView());
 		window.draw(fpsText);
 		window.display();
 	}

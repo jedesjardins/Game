@@ -33,5 +33,6 @@ private:
 	std::string path;
 };
 
-}
+} //namespace gh
+
 #endif

@@ -54,6 +54,6 @@ private:
 	sf::Vertex _vertices[4];
 };
 
-}
+} //namespace gh
 
 #endif

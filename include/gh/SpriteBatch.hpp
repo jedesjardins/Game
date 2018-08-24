@@ -33,6 +33,6 @@ private:
 	TextureAtlas *m_atlas;
 };
 
-}
+} //namespace gh
 
 #endif
