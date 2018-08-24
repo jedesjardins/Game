@@ -1,7 +1,5 @@
 local State = State.new()
 
-println(Resources:getTexture("man.png"))
-
 function State.new()
 	local self = setmetatable({}, State)
 

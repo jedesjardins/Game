@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 
 #include <SFML/Graphics.hpp>
 #include "imgui.h"
@@ -12,6 +13,8 @@
 #include "input.hpp"
 #include "anim_sprite.hpp"
 #include "ui_text.hpp"
+
+#include "textureatlas.hpp"
 
 struct Window_State
 {
@@ -83,7 +86,7 @@ void read_config(sol::state &lua, sf::RenderWindow &window)
 		sf::VideoMode::getDesktopMode().height
 	};
 
-	window.setVerticalSyncEnabled(true);
+	//window.setVerticalSyncEnabled(true);
 }
 
 int main()
@@ -129,19 +132,96 @@ int main()
 	sf::Clock clock;
 	sf::Time dt;
 
+	sf::Text fpsText("", font, 30);
+	fpsText.setColor(sf::Color::White);
+
 	Input input;
+
+	sf::TextureAtlas atlas;
+	atlas.setTexturePath(std::string(SOURCE_DIR)+"/resources/sprites/");
+
+	sf::AtlasSprite sprite;
+	sprite.setTexture(atlas.getTexture());
+	sprite.setTextureRect(atlas.getTextureRect("man.png"));
+	sprite.setFrames({8, 4});
+	sprite.setFrame({1, 1});
+	sprite.setPosition(100, 75);
+
+	sf::AtlasSprite sprite2;
+	sprite2.setTexture(atlas.getTexture());
+	sprite2.setTextureRect(atlas.getTextureRect("full_tilesheet.png"));
+	sprite2.setFrames({8, 4});
+	sprite2.setFrame({1, 1});
+	sprite2.setPosition(100, 75);
+
+	sf::SpriteBatch spritebatch;
+	spritebatch.batch(sprite2);
+	spritebatch.batch(sprite);
+	spritebatch.addAtlas(atlas);
+
+	sf::Texture t1, t2;
+	t1.loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+"man.png").c_str());
+	t2.loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+"full_tilesheet.png").c_str());
+
+	sf::AtlasSprite sprite3;
+	sprite3.setTexture(t1);
+	sprite3.setFrames({8, 4});
+	sprite3.setFrame({1, 1});
+	sprite3.setPosition(0, 75);
+
+	sf::AtlasSprite sprite4;
+	sprite4.setTexture(t2);
+	sprite4.setFrames({8, 4});
+	sprite4.setFrame({1, 1});
+	sprite4.setPosition(50, 75);
+
+	sf::View view;
+	view.setCenter(WINDOW_STATE.screen_dimensions.x/2, WINDOW_STATE.screen_dimensions.y/2);
+	view.setSize(WINDOW_STATE.screen_dimensions.x, WINDOW_STATE.screen_dimensions.y);
+
+	window.setView(view);
 	
 	while (running)
 	{
+		dt = clock.restart();
+
 		ImGui::SFML::Update(window, dt);
 		running &= input.update(window);
 
-		window.clear({0, 0, 0, 255});
-		running &= (bool)update(dt.asSeconds(), input);
-		ImGui::SFML::Render(window);
-		window.display();
+		//std::stringstream ss;
+		//ss << "FPS: " << std::fixed << std::setprecision(0) << (1000.0f / dt.asMilliseconds());
+		//fpsText.setString(ss.str());
+		std::cout << "FPS: " << std::fixed << std::setprecision(0) << (1000.0f / dt.asMilliseconds()) << "\n";
+		//std::cout << "FPS: " << std::fixed << std::setprecision(6) << dt.asSeconds() << "\n";
 
-		dt = clock.restart();
+		window.clear({0, 0, 0, 255});
+		//running &= (bool)update(dt.asSeconds(), input);
+		/*
+		for(int i = 0; i < 1000; ++i)
+		{
+			window.draw(sprite3);
+			window.draw(sprite4);
+		}
+		*/
+		
+		// don't resize VertexArray
+		// cache transformations
+		sf::SpriteBatch batch;
+		batch.addAtlas(atlas);
+		batch.resize(8000);
+		for(int i = 0; i < 1000; ++i)
+		{
+			batch.batch(sprite2);
+			batch.batch(sprite);
+		}
+		window.draw(batch);
+		
+		ImGui::SFML::Render(window);
+
+		window.setView(view);
+		//window.draw(fpsText);
+		window.display();
+		running = false;
 	}
 
 	for(auto it: resources)
