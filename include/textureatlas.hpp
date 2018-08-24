@@ -42,7 +42,7 @@ public:
 private:
 	friend class SpriteBatch;
 
-	virtual void batch(SpriteBatch &) const = 0;
+	virtual void batch(SpriteBatch &) = 0;
 };
 
 class SpriteBatch: public Drawable
@@ -88,10 +88,11 @@ public:
 	friend class SpriteBatch;
 private:
 	virtual void draw(RenderTarget& target, RenderStates states) const;
-	virtual void batch(SpriteBatch &) const;
+	virtual void batch(SpriteBatch &);
 
 	void updatePositions();
 	void updateTexCoords();
+	void updateTransformPositions();
 
 	Vector2u m_frame;
 	Vector2u m_frames;
@@ -101,8 +102,9 @@ private:
 	Vertex m_vertices[4];
 
 	//cached vertex transformations
+	bool updateTranslatedTexturePoints;
 	Vertex m_translated[4];
-	const Transform *cached;
+	Transform cached;
 };
 
 }

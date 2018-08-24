@@ -89,6 +89,30 @@ void read_config(sol::state &lua, sf::RenderWindow &window)
 	//window.setVerticalSyncEnabled(true);
 }
 
+void draw_sprites(sf::RenderWindow &window, sf::AtlasSprite &sprite, sf::AtlasSprite &sprite2)
+{
+	for(int i = 0; i < 1000; ++i)
+	{
+		window.draw(sprite);
+		window.draw(sprite2);
+	}
+}
+
+void draw_batch(sf::RenderWindow &window, sf::TextureAtlas &atlas, sf::AtlasSprite &sprite, sf::AtlasSprite &sprite2)
+{
+	// don't resize VertexArray
+	// cache transformations
+	sf::SpriteBatch batch;
+	batch.addAtlas(atlas);
+	batch.resize(8000);
+	for(int i = 0; i < 1000; ++i)
+	{
+		batch.batch(sprite);
+		batch.batch(sprite2);
+	}
+	window.draw(batch);
+}
+
 int main()
 {
 	sol::state lua;
@@ -133,7 +157,7 @@ int main()
 	sf::Time dt;
 
 	sf::Text fpsText("", font, 30);
-	fpsText.setColor(sf::Color::White);
+	fpsText.setFillColor(sf::Color::White);
 
 	Input input;
 
@@ -188,40 +212,20 @@ int main()
 		ImGui::SFML::Update(window, dt);
 		running &= input.update(window);
 
-		//std::stringstream ss;
-		//ss << "FPS: " << std::fixed << std::setprecision(0) << (1000.0f / dt.asMilliseconds());
-		//fpsText.setString(ss.str());
-		std::cout << "FPS: " << std::fixed << std::setprecision(0) << (1000.0f / dt.asMilliseconds()) << "\n";
-		//std::cout << "FPS: " << std::fixed << std::setprecision(6) << dt.asSeconds() << "\n";
+		std::stringstream ss;
+		ss << "dt: " << std::fixed << std::setprecision(2) << dt.asSeconds()*1000.0f;
+		fpsText.setString(ss.str());
 
 		window.clear({0, 0, 0, 255});
 		//running &= (bool)update(dt.asSeconds(), input);
-		/*
-		for(int i = 0; i < 1000; ++i)
-		{
-			window.draw(sprite3);
-			window.draw(sprite4);
-		}
-		*/
-		
-		// don't resize VertexArray
-		// cache transformations
-		sf::SpriteBatch batch;
-		batch.addAtlas(atlas);
-		batch.resize(8000);
-		for(int i = 0; i < 1000; ++i)
-		{
-			batch.batch(sprite2);
-			batch.batch(sprite);
-		}
-		window.draw(batch);
+		draw_sprites(window, sprite3, sprite4);
+		draw_batch(window, atlas, sprite2, sprite);
 		
 		ImGui::SFML::Render(window);
 
 		window.setView(view);
-		//window.draw(fpsText);
+		window.draw(fpsText);
 		window.display();
-		running = false;
 	}
 
 	for(auto it: resources)
@@ -232,5 +236,4 @@ int main()
 	ImGui::SFML::Shutdown();
 
 	return 0;
-
 }

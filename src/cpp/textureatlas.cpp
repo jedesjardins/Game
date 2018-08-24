@@ -178,36 +178,12 @@ void AtlasSprite::draw(RenderTarget& target, RenderStates states) const
 	}
 }
 
-void AtlasSprite::batch(SpriteBatch &spritebatch) const
+void AtlasSprite::batch(SpriteBatch &spritebatch)
 {
 	//TODO: manipulate them with transform
-	Vertex vertices[4];
 
-	vertices[0] = Vertex(
-		getTransform().transformPoint(m_vertices[0].position),
-		m_vertices[0].color,
-		m_vertices[0].texCoords
-	);
-
-	vertices[1] = Vertex(
-		getTransform().transformPoint(m_vertices[1].position),
-		m_vertices[1].color,
-		m_vertices[1].texCoords
-	);
-
-	vertices[2] = Vertex(
-		getTransform().transformPoint(m_vertices[2].position),
-		m_vertices[2].color,
-		m_vertices[2].texCoords
-	);
-
-	vertices[3] = Vertex(
-		getTransform().transformPoint(m_vertices[3].position),
-		m_vertices[3].color,
-		m_vertices[3].texCoords
-	);
-
-	spritebatch.batch(vertices, 4);
+	updateTransformPositions();
+	spritebatch.batch(m_translated, 4);
 }
 
 void AtlasSprite::updatePositions()
@@ -232,9 +208,33 @@ void AtlasSprite::updateTexCoords()
 	m_vertices[1].texCoords = Vector2f(left, bottom);
 	m_vertices[2].texCoords = Vector2f(right, top);
 	m_vertices[3].texCoords = Vector2f(right, bottom);
+
+
+	updateTranslatedTexturePoints = true;
 }
 
+void AtlasSprite::updateTransformPositions()
+{
+	auto transform = getTransform();
 
+	if(cached != transform)
+	{
+		m_translated[0].position = transform.transformPoint(m_vertices[0].position);
+		m_translated[1].position = transform.transformPoint(m_vertices[1].position);
+		m_translated[2].position = transform.transformPoint(m_vertices[2].position);
+		m_translated[3].position = transform.transformPoint(m_vertices[3].position);
+		cached = transform;
+	}
+
+	if(updateTranslatedTexturePoints)
+	{
+		m_translated[0].texCoords = m_vertices[0].texCoords;
+		m_translated[1].texCoords = m_vertices[1].texCoords;
+		m_translated[2].texCoords = m_vertices[2].texCoords;
+		m_translated[3].texCoords = m_vertices[3].texCoords;
+		updateTranslatedTexturePoints = false;
+	}
+}
 
 
 
