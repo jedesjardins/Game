@@ -2,6 +2,7 @@
 
 using KEYS = sf::Keyboard::Key;
 
+
 void register_functions(sol::state &lua)
 {
 	lua.new_usertype<sf::RenderWindow>("RenderWindow",
@@ -119,16 +120,16 @@ void register_functions(sol::state &lua)
 		"y", &sf::Vector2u::y
 	);
 
-	lua.new_usertype<sf::Anim_Sprite>("Anim_Sprite",
+	lua.new_usertype<gh::Anim_Sprite>("Anim_Sprite",
 		sol::base_classes, sol::bases<sf::Drawable>(),
 		"setPosition", sol::overload(
-				static_cast<void (sf::Anim_Sprite::*)(float, float)>(&sf::Anim_Sprite::setPosition),
-				static_cast<void (sf::Anim_Sprite::*)(const sf::Vector2f&)>(&sf::Anim_Sprite::setPosition)
+				static_cast<void (gh::Anim_Sprite::*)(float, float)>(&gh::Anim_Sprite::setPosition),
+				static_cast<void (gh::Anim_Sprite::*)(const sf::Vector2f&)>(&gh::Anim_Sprite::setPosition)
 			),
-		"setRotation", &sf::Anim_Sprite::setRotation,
-		"setTexture", &sf::Anim_Sprite::setTexture,
-		"setFrames", &sf::Anim_Sprite::setFrames,
-		"setFrame", &sf::Anim_Sprite::setFrame
+		"setRotation", &gh::Anim_Sprite::setRotation,
+		"setTexture", &gh::Anim_Sprite::setTexture,
+		"setFrames", &gh::Anim_Sprite::setFrames,
+		"setFrame", &gh::Anim_Sprite::setFrame
 	);
 
 	lua.new_usertype<sf::Sprite>("Sprite",
@@ -165,19 +166,19 @@ void register_functions(sol::state &lua)
 		"getSize", &sf::View::getSize
 	);
 
-	lua.new_usertype<sf::UI_Text>("UI_Text",
+	lua.new_usertype<gh::UI_Text>("UI_Text",
 		sol::base_classes, sol::bases<sf::Drawable>(),
 		"new", sol::constructors<
-				sf::UI_Text(),
-				sf::UI_Text(const std::string &, const sf::Font &, unsigned int)
+				gh::UI_Text(),
+				gh::UI_Text(const std::string &, const sf::Font &, unsigned int)
 			>(),
 		"setPosition", sol::overload(
-				static_cast<void (sf::UI_Text::*)(float, float)>(&sf::UI_Text::setPosition),
-				static_cast<void (sf::UI_Text::*)(const sf::Vector2f&)>(&sf::UI_Text::setPosition)
+				static_cast<void (gh::UI_Text::*)(float, float)>(&gh::UI_Text::setPosition),
+				static_cast<void (gh::UI_Text::*)(const sf::Vector2f&)>(&gh::UI_Text::setPosition)
 			),
 		"setScale", sol::overload(
-				static_cast<void (sf::UI_Text::*)(float, float)>(&sf::UI_Text::setScale),
-				static_cast<void (sf::UI_Text::*)(const sf::Vector2f&)>(&sf::UI_Text::scale)
+				static_cast<void (gh::UI_Text::*)(float, float)>(&gh::UI_Text::setScale),
+				static_cast<void (gh::UI_Text::*)(const sf::Vector2f&)>(&gh::UI_Text::scale)
 			)
 	);
 

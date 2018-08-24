@@ -11,10 +11,8 @@
 
 #include "config.h"
 #include "input.hpp"
-#include "anim_sprite.hpp"
-#include "ui_text.hpp"
 
-#include "textureatlas.hpp"
+#include "gh.hpp"
 
 struct Window_State
 {
@@ -89,7 +87,7 @@ void read_config(sol::state &lua, sf::RenderWindow &window)
 	//window.setVerticalSyncEnabled(true);
 }
 
-void draw_sprites(sf::RenderWindow &window, sf::AtlasSprite &sprite, sf::AtlasSprite &sprite2)
+void draw_sprites(sf::RenderWindow &window, gh::AtlasSprite &sprite, gh::AtlasSprite &sprite2)
 {
 	for(int i = 0; i < 1000; ++i)
 	{
@@ -98,11 +96,11 @@ void draw_sprites(sf::RenderWindow &window, sf::AtlasSprite &sprite, sf::AtlasSp
 	}
 }
 
-void draw_batch(sf::RenderWindow &window, sf::TextureAtlas &atlas, sf::AtlasSprite &sprite, sf::AtlasSprite &sprite2)
+void draw_batch(sf::RenderWindow &window, gh::TextureAtlas &atlas, gh::AtlasSprite &sprite, gh::AtlasSprite &sprite2)
 {
 	// don't resize VertexArray
 	// cache transformations
-	sf::SpriteBatch batch;
+	gh::SpriteBatch batch;
 	batch.addAtlas(atlas);
 	batch.resize(8000);
 	for(int i = 0; i < 1000; ++i)
@@ -161,24 +159,24 @@ int main()
 
 	Input input;
 
-	sf::TextureAtlas atlas;
+	gh::TextureAtlas atlas;
 	atlas.setTexturePath(std::string(SOURCE_DIR)+"/resources/sprites/");
 
-	sf::AtlasSprite sprite;
+	gh::AtlasSprite sprite;
 	sprite.setTexture(atlas.getTexture());
 	sprite.setTextureRect(atlas.getTextureRect("man.png"));
 	sprite.setFrames({8, 4});
 	sprite.setFrame({1, 1});
 	sprite.setPosition(100, 75);
 
-	sf::AtlasSprite sprite2;
+	gh::AtlasSprite sprite2;
 	sprite2.setTexture(atlas.getTexture());
 	sprite2.setTextureRect(atlas.getTextureRect("full_tilesheet.png"));
 	sprite2.setFrames({8, 4});
 	sprite2.setFrame({1, 1});
 	sprite2.setPosition(100, 75);
 
-	sf::SpriteBatch spritebatch;
+	gh::SpriteBatch spritebatch;
 	spritebatch.batch(sprite2);
 	spritebatch.batch(sprite);
 	spritebatch.addAtlas(atlas);
@@ -187,13 +185,13 @@ int main()
 	t1.loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+"man.png").c_str());
 	t2.loadFromFile((std::string(SOURCE_DIR)+"/resources/sprites/"+"full_tilesheet.png").c_str());
 
-	sf::AtlasSprite sprite3;
+	gh::AtlasSprite sprite3;
 	sprite3.setTexture(t1);
 	sprite3.setFrames({8, 4});
 	sprite3.setFrame({1, 1});
 	sprite3.setPosition(0, 75);
 
-	sf::AtlasSprite sprite4;
+	gh::AtlasSprite sprite4;
 	sprite4.setTexture(t2);
 	sprite4.setFrames({8, 4});
 	sprite4.setFrame({1, 1});
@@ -217,9 +215,9 @@ int main()
 		fpsText.setString(ss.str());
 
 		window.clear({0, 0, 0, 255});
-		//running &= (bool)update(dt.asSeconds(), input);
-		draw_sprites(window, sprite3, sprite4);
-		draw_batch(window, atlas, sprite2, sprite);
+		running &= (bool)update(dt.asSeconds(), input);
+		//draw_sprites(window, sprite3, sprite4);
+		//draw_batch(window, atlas, sprite2, sprite);
 		
 		ImGui::SFML::Render(window);
 

@@ -25,7 +25,7 @@ find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 find_package(OpenGL REQUIRED)
 
 # source files
-file(GLOB SOURCES "src/cpp/*.cpp" "src/cpp/imgui/*.cpp")
+file(GLOB SOURCES "src/cpp/*.cpp" "src/cpp/gl/*.cpp" "src/cpp/imgui/*.cpp")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

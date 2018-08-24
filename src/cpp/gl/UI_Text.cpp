@@ -1,4 +1,4 @@
-#include "ui_text.hpp"
+#include "gh/UI_Text.hpp"
 
 #include <iostream>
 
@@ -42,7 +42,7 @@ namespace
     }
 }
 
-namespace sf
+namespace gh
 {
 
 UI_Text::UI_Text():
@@ -53,10 +53,10 @@ UI_Text::UI_Text():
 	_letterSpacingFactor(1.f),
 	_lineSpacingFactor  (1.f),
 	_fillColor          (255, 255, 255),
-	_vertices           (Triangles),
+	_vertices           (sf::Triangles),
 	_bounds             (),
 	_geometryNeedUpdate (true),
-	_outlineVertices    (Triangles),
+	_outlineVertices    (sf::Triangles),
 	_outlineThickness   (0),
 	_outlineColor       (0, 0, 0)
 {
@@ -64,7 +64,7 @@ UI_Text::UI_Text():
 	setOrigin(lb.left, _baseLineOffset);
 }
 
-UI_Text::UI_Text(const std::string& string, const Font& font, unsigned int characterSize):
+UI_Text::UI_Text(const std::string& string, const sf::Font& font, unsigned int characterSize):
 	_string(string),
 	_font(&font),
 	_characterSize(characterSize),
@@ -72,10 +72,10 @@ UI_Text::UI_Text(const std::string& string, const Font& font, unsigned int chara
 	_letterSpacingFactor(1.f),
 	_lineSpacingFactor  (1.f),
 	_fillColor          (255, 255, 255),
-	_vertices           (Triangles),
+	_vertices           (sf::Triangles),
 	_bounds             (),
 	_geometryNeedUpdate (true),
-	_outlineVertices    (Triangles),
+	_outlineVertices    (sf::Triangles),
 	_outlineThickness   (0),
 	_outlineColor       (0, 0, 0)
 {
@@ -83,7 +83,7 @@ UI_Text::UI_Text(const std::string& string, const Font& font, unsigned int chara
 	setOrigin(lb.left, _baseLineOffset);
 }
 
-void UI_Text::setString(const String& string)
+void UI_Text::setString(const sf::String& string)
 {
 	if(_string != string)
 	{
@@ -92,12 +92,12 @@ void UI_Text::setString(const String& string)
 	}
 }
 
-const String& UI_Text::getString()
+const sf::String& UI_Text::getString()
 {
 	return _string;
 }
 
-void UI_Text::setFont(const Font& font)
+void UI_Text::setFont(const sf::Font& font)
 {
 	if(_font != &font)
 	{
@@ -106,7 +106,7 @@ void UI_Text::setFont(const Font& font)
 	}
 }
 
-const Font& UI_Text::getFont()
+const sf::Font& UI_Text::getFont()
 {
 	return *_font;
 }
@@ -138,7 +138,7 @@ unsigned int UI_Text::getAlignment()
 	return _alignment;
 }
 
-void UI_Text::setColor(const Color& color)
+void UI_Text::setColor(const sf::Color& color)
 {
 	if (color != _fillColor)
 	{
@@ -154,37 +154,25 @@ void UI_Text::setColor(const Color& color)
 	}
 }
 
-const Color& UI_Text::getColor()
+const sf::Color& UI_Text::getColor()
 {
 	return _fillColor;
 }
 
-FloatRect UI_Text::getLocalBounds() const
+sf::FloatRect UI_Text::getLocalBounds() const
 {
     ensureGeometryUpdate();
 
     return _bounds;
 }
 
-FloatRect UI_Text::getGlobalBounds() const
+sf::FloatRect UI_Text::getGlobalBounds() const
 {
     return getTransform().transformRect(getLocalBounds());
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-void UI_Text::draw(RenderTarget& target, RenderStates states) const
+void UI_Text::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	if (_font)
 	{
@@ -224,7 +212,7 @@ void UI_Text::ensureGeometryUpdate() const
 	// Clear the previous geometry
 	_vertices.clear();
 	_outlineVertices.clear();
-	_bounds = FloatRect();
+	_bounds = sf::FloatRect();
 
 
 	// Compute values related to the text style
@@ -238,7 +226,7 @@ void UI_Text::ensureGeometryUpdate() const
 	// Compute the location of the strike through dynamically
 	// We use the center point of the lowercase 'x' glyph as the reference
 	// We reuse the underline thickness as the thickness of the strike through as well
-	FloatRect xBounds = _font->getGlyph(L'x', _characterSize, isBold).bounds;
+	sf::FloatRect xBounds = _font->getGlyph(L'x', _characterSize, isBold).bounds;
 	float strikeThroughOffset = xBounds.top + xBounds.height / 2.f;
 
 	// Precompute the variables needed by the algorithm
@@ -255,10 +243,10 @@ void UI_Text::ensureGeometryUpdate() const
 	float minY = static_cast<float>(_characterSize);
 	float maxX = 0.f;
 	float maxY = 0.f;
-	Uint32 prevChar = 0;
+	sf::Uint32 prevChar = 0;
 	for (std::size_t i = 0; i < _string.getSize(); ++i)
 	{
-		Uint32 curChar = _string[i];
+		sf::Uint32 curChar = _string[i];
 
 		// Skip the \r char to avoid weird graphical issues
 		if (curChar == '\r')
@@ -312,7 +300,7 @@ void UI_Text::ensureGeometryUpdate() const
 		// Apply the outline
 		if (_outlineThickness != 0)
 		{
-			const Glyph& glyph = _font->getGlyph(curChar, _characterSize, isBold, _outlineThickness);
+			const sf::Glyph& glyph = _font->getGlyph(curChar, _characterSize, isBold, _outlineThickness);
 
 			float left   = glyph.bounds.left;
 			float top    = glyph.bounds.top;
@@ -320,7 +308,7 @@ void UI_Text::ensureGeometryUpdate() const
 			float bottom = glyph.bounds.top  + glyph.bounds.height;
 
 			// Add the outline glyph to the vertices
-			addGlyphQuad(_outlineVertices, Vector2f(x, y), _outlineColor, glyph, italicShear, _outlineThickness);
+			addGlyphQuad(_outlineVertices, sf::Vector2f(x, y), _outlineColor, glyph, italicShear, _outlineThickness);
 
 			// Update the current bounds with the outlined glyph bounds
 			minX = std::min(minX, x + left   - italicShear * bottom - _outlineThickness);
@@ -330,10 +318,10 @@ void UI_Text::ensureGeometryUpdate() const
 		}
 
 		// Extract the current glyph's description
-		const Glyph& glyph = _font->getGlyph(curChar, _characterSize, isBold);
+		const sf::Glyph& glyph = _font->getGlyph(curChar, _characterSize, isBold);
 
 		// Add the glyph to the vertices
-		addGlyphQuad(_vertices, Vector2f(x, y), _fillColor, glyph, italicShear);
+		addGlyphQuad(_vertices, sf::Vector2f(x, y), _fillColor, glyph, italicShear);
 
 		// Update the current bounds with the non outlined glyph bounds
 		if (_outlineThickness == 0)

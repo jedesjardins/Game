@@ -1,8 +1,12 @@
-#include "textureatlas.hpp"
 
-#include <iostream>
+#include <SFML/Graphics/Sprite.hpp>
 
-namespace sf
+#include "gh/Batchable.hpp"
+#include "gh/AtlasSprite.hpp"
+#include "gh/SpriteBatch.hpp"
+#include "gh/TextureAtlas.hpp"
+
+namespace gh
 {
 
 TextureAtlas::TextureAtlas()
@@ -14,12 +18,12 @@ TextureAtlas::TextureAtlas()
 	open_rects.push_front({0, 0, static_cast<int>(max_size), static_cast<int>(max_size)});
 }
 
-const Texture& TextureAtlas::getTexture()
+const sf::Texture& TextureAtlas::getTexture()
 {
 	return target.getTexture();
 }
 
-const IntRect& TextureAtlas::getTextureRect(std::string name)
+const sf::IntRect& TextureAtlas::getTextureRect(std::string name)
 {	
 	auto res = texture_rects.find(name);
 	if(res != texture_rects.end())
@@ -34,15 +38,15 @@ const IntRect& TextureAtlas::getTextureRect(std::string name)
 	}
 }
 
-bool compare_rects(const IntRect &r1, const IntRect &r2)
+bool compare_rects(const sf::IntRect &r1, const sf::IntRect &r2)
 {
 	return r1.width * r1.height < r2.width * r2.height;
 }
 
-void TextureAtlas::insertTexture(const std::string key, const Texture &texture)
+void TextureAtlas::insertTexture(const std::string key, const sf::Texture &texture)
 {
 	// get the size of the texture to insert
-	Vector2u size = texture.getSize();
+	sf::Vector2u size = texture.getSize();
 
 	// find an open rect that it fits in
 	auto it = open_rects.begin();
@@ -51,7 +55,7 @@ void TextureAtlas::insertTexture(const std::string key, const Texture &texture)
 			break;
 
 	// draw the rect into the rect
-	Sprite sprite;
+	sf::Sprite sprite;
 	sprite.setTexture(texture);
 	sprite.setPosition(it->left+1, it->top+1);
 	target.draw(sprite);
@@ -69,11 +73,11 @@ void TextureAtlas::insertTexture(const std::string key, const Texture &texture)
 	int rem_h = it->height - (size.y + 1);
 
 	// niave split horizontally every time
-	IntRect n_rect1{it->left,
+	sf::IntRect n_rect1{it->left,
 					static_cast<int>(it->top + size.y + 1),
 					static_cast<int>(size.x + 1),
 					rem_h};
-	IntRect n_rect2{static_cast<int>(it->left + size.x + 1),
+	sf::IntRect n_rect2{static_cast<int>(it->left + size.x + 1),
 					it->top,
 					rem_w,
 					it->height};
@@ -102,19 +106,19 @@ AtlasSprite::AtlasSprite()
 }
 
 
-void AtlasSprite::setTexture(const Texture &texture)
+void AtlasSprite::setTexture(const sf::Texture &texture)
 {
 	if(!m_texture && (m_rect == sf::IntRect()))
-		setTextureRect(IntRect(0, 0, texture.getSize().x, texture.getSize().y));
+		setTextureRect(sf::IntRect(0, 0, texture.getSize().x, texture.getSize().y));
 
 	m_texture = &texture;
 }
-const Texture* AtlasSprite::getTexture() const
+const sf::Texture* AtlasSprite::getTexture() const
 {
 	return m_texture;
 }
 
-void AtlasSprite::setTextureRect(const IntRect &rect)
+void AtlasSprite::setTextureRect(const sf::IntRect &rect)
 {
 	if(m_rect != rect)
 	{
@@ -124,12 +128,12 @@ void AtlasSprite::setTextureRect(const IntRect &rect)
 	}
 	
 }
-const IntRect& AtlasSprite::getTextureRect() const
+const sf::IntRect& AtlasSprite::getTextureRect() const
 {
 	return m_rect;
 }
 
-void AtlasSprite::setFrames(const Vector2u &frames)
+void AtlasSprite::setFrames(const sf::Vector2u &frames)
 {
 	if(m_frames != frames)
 	{
@@ -138,12 +142,12 @@ void AtlasSprite::setFrames(const Vector2u &frames)
 		updateTexCoords();
 	}
 }
-const Vector2u& AtlasSprite::getFrames() const
+const sf::Vector2u& AtlasSprite::getFrames() const
 {
 	return m_frames;
 }
 
-void AtlasSprite::setFrame(const Vector2u &frame)
+void AtlasSprite::setFrame(const sf::Vector2u &frame)
 {
 	if(m_frame != frame)
 	{
@@ -151,30 +155,30 @@ void AtlasSprite::setFrame(const Vector2u &frame)
 		updateTexCoords();
 	}
 }
-const Vector2u& AtlasSprite::getFrame() const
+const sf::Vector2u& AtlasSprite::getFrame() const
 {
 	return m_frame;
 }
 
-FloatRect AtlasSprite::getLocalBounds() const
+sf::FloatRect AtlasSprite::getLocalBounds() const
 {
 	float width = static_cast<float>(std::abs(m_rect.width));
 	float height = static_cast<float>(std::abs(m_rect.height));
 
-	return FloatRect(0.f, 0.f, width/m_frames.x, height/m_frames.y);
+	return sf::FloatRect(0.f, 0.f, width/m_frames.x, height/m_frames.y);
 }
-FloatRect AtlasSprite::getGlobalBounds() const
+sf::FloatRect AtlasSprite::getGlobalBounds() const
 {
 	return getTransform().transformRect(getLocalBounds());
 }
 
-void AtlasSprite::draw(RenderTarget& target, RenderStates states) const
+void AtlasSprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	if (m_texture)
 	{
 		states.transform *= getTransform();
 		states.texture = m_texture;
-		target.draw(m_vertices, 4, TriangleStrip, states);
+		target.draw(m_vertices, 4, sf::TriangleStrip, states);
 	}
 }
 
@@ -188,26 +192,26 @@ void AtlasSprite::batch(SpriteBatch &spritebatch)
 
 void AtlasSprite::updatePositions()
 {
-	FloatRect bounds = getLocalBounds();
+	sf::FloatRect bounds = getLocalBounds();
 
-	m_vertices[0].position = Vector2f(0, 0);
-	m_vertices[1].position = Vector2f(0, bounds.height);
-	m_vertices[2].position = Vector2f(bounds.width, 0);
-	m_vertices[3].position = Vector2f(bounds.width, bounds.height);
+	m_vertices[0].position = sf::Vector2f(0, 0);
+	m_vertices[1].position = sf::Vector2f(0, bounds.height);
+	m_vertices[2].position = sf::Vector2f(bounds.width, 0);
+	m_vertices[3].position = sf::Vector2f(bounds.width, bounds.height);
 }
 void AtlasSprite::updateTexCoords()
 {
-	FloatRect bounds = getLocalBounds();
+	sf::FloatRect bounds = getLocalBounds();
 
 	float left = bounds.width * m_frame.x + m_rect.left;
 	float right = left + bounds.width;
 	float top = bounds.height * m_frame.y + m_rect.top;
 	float bottom = top + bounds.height;
 
-	m_vertices[0].texCoords = Vector2f(left, top);
-	m_vertices[1].texCoords = Vector2f(left, bottom);
-	m_vertices[2].texCoords = Vector2f(right, top);
-	m_vertices[3].texCoords = Vector2f(right, bottom);
+	m_vertices[0].texCoords = sf::Vector2f(left, top);
+	m_vertices[1].texCoords = sf::Vector2f(left, bottom);
+	m_vertices[2].texCoords = sf::Vector2f(right, top);
+	m_vertices[3].texCoords = sf::Vector2f(right, bottom);
 
 
 	updateTranslatedTexturePoints = true;
@@ -240,7 +244,7 @@ void AtlasSprite::updateTransformPositions()
 
 SpriteBatch::SpriteBatch()
 {
-	m_vertices.setPrimitiveType(Quads);
+	m_vertices.setPrimitiveType(sf::Quads);
 }
 
 void SpriteBatch::resize(std::size_t vertexCount)
@@ -252,7 +256,7 @@ void SpriteBatch::batch(Batchable &sprite)
 {
 	sprite.batch(*this);
 }
-void SpriteBatch::batch(const Vertex* vertices, std::size_t vertexCount)
+void SpriteBatch::batch(const sf::Vertex* vertices, std::size_t vertexCount)
 {
 	/*
 	for (std::size_t i = 0; i < vertexCount; ++i)
@@ -267,7 +271,7 @@ void SpriteBatch::batch(const Vertex* vertices, std::size_t vertexCount)
 	m_vertices.append(vertices[2]);
 }
 
-void SpriteBatch::draw(RenderTarget& target, RenderStates states) const
+void SpriteBatch::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	states.texture = &m_atlas->getTexture();
 	target.draw(m_vertices, states);
