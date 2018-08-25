@@ -347,6 +347,7 @@ sf::Vector2f collide2(const sf::FloatRect &r1, const sf::FloatRect &r2,
 
 			if(proj1.second < proj2.first || proj2.second < proj1.first)
 				//found gap, return no overlap
+
 				return {};
 			else
 			{
@@ -367,8 +368,45 @@ sf::Vector2f collide2(const sf::FloatRect &r1, const sf::FloatRect &r2,
 	}
 	else
 	{
-		//Regular
-		return {};
+		//vertical axis
+		float min1 = r1.top-r1.height/2;
+		float max1 = r1.top+r1.height/2;
+		float min2 = r2.top-r2.height/2;
+		float max2 = r2.top+r2.height/2;
+		float vertical_overlap;
+		if(max1 < min2 || max2 < min1)
+				//found gap, return no overlap
+			return {};
+		else
+		{
+			if(max1 - min2 < max2 - min1)
+				vertical_overlap = min2 - max1;
+			else
+				vertical_overlap = max2 - min1;
+		}
+
+		//horizontal axis
+		min1 = r1.left-r1.width/2;
+		max1 = r1.left+r1.width/2;
+		min2 = r2.left-r2.width/2;
+		max2 = r2.left+r2.width/2;
+		float horizontal_overlap;
+		if(max1 < min2 || max2 < min1)
+				//found gap, return no overlap
+			return {};
+		else
+		{
+			if(max1 - min2 < max2 - min1)
+				horizontal_overlap = min2 - max1;
+			else
+				horizontal_overlap = max2 - min1;
+		}
+
+		if(vertical_overlap < horizontal_overlap)
+			return {0, vertical_overlap};
+		else
+			return {horizontal_overlap, 0};
+
 	}
 }
 
